@@ -1,0 +1,6 @@
+.vscode/
+
+*.sqlite
+*.txt.gz
+*.txt
+data/

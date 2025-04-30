@@ -226,7 +226,37 @@ and that for each archetype there exists one data point that is only used to def
 
 then the objective does not suffer from rotational ambiguity. 
 
-Note, these conditions mean that both $\mathbf{A}$ and $\mathbf{B}$ have rank $K$ (i.e. $K$ linearly indendent columns / rows).
+Condition 1 implies that $\mathbf{A}$ has at least $K$ rows that have only one non-zero value, and this non-zero value equals one.
+
+Condition 2 implies that $\mathbf{B}$ has at least $K$ columns that have only one non-zero value, and this non-zero value equals one.
+
+Example: If we had $3$ archetpyes, the following weight matrices $\mathbf{A}$, $\mathbf{B}$ would satisfy these conditions
+
+\begin{equation}
+    \mathbf{A} =     
+    \left[
+        \begin{array}{ccc}
+            \vdots & \vdots & \vdots \\
+            1 & 0 & 0 \\
+            \vdots & \vdots & \vdots \\
+            0 & 0 & 1 \\
+            \vdots & \vdots & \vdots \\
+            0 & 1 & 0 \\
+            \vdots & \vdots & \vdots \\
+        \end{array}
+    \right]
+    , \quad
+    \mathbf{B} = 
+    \left[
+        \begin{array}{ccccccc}
+            \cdots & 0 & \cdots & 1 & \cdots & 0 & \cdots \\
+            \cdots & 0 & \cdots & 0 & \cdots & 1 & \cdots \\
+            \cdots & 1 & \cdots & 0 & \cdots & 0 & \cdots \\
+        \end{array}
+    \right]
+\end{equation}
+
+%Remark, these conditions mean that both $\mathbf{A}$ and $\mathbf{B}$ have rank $K$ (i.e. $K$ linearly indendent columns / rows).
 
 Let $\mathbf{Q} \in \mathbf{R}^{K \times K}$ be some invertible matrix
 
@@ -238,7 +268,17 @@ Requiring that $\tilde{\mathbf{A}} \in F(N, K)$ and $\tilde{\mathbf{B}} \in F(K,
 
 First, since we require $\tilde{\mathbf{A}} \geq 0$, and $\mathbf{A} \geq 0$, and $\tilde{\mathbf{A}} = \mathbf{A} \mathbf{Q}^{-1}$, and Equation~\eqref{eq:cond1} must hold, we know that $\mathbf{Q} \geq 0$.
 
-Second, since we require $\tilde{\mathbf{B}} \geq 0$, and $\mathbf{B} \geq 0$, and $\tilde{\mathbf{B}} = \mathbf{Q}^{-1} \mathbf{B}$, and Equation~\eqref{eq:cond2} must hold, we know that $\mathbf{Q}^{-1} \geq 0$.
+Proof: Any column $c \in \{1, ..., K\}$ of $Q A$ is given by a linear combination of the columns of $A$
+
+\begin{equation}
+    (Q A)_{:, c} = A q_{:, c} = \sum_{k = 1}^K a_{:, c} q_{k, c}
+\end{equation}
+
+Now if any coefficient $q_{1, c}, ..., q_{K, c}$ is negative, then the resulting vector must have at least one negative element, since according to condition one, for every column vector there exists some index $n^\prime \in \{1, ..., N\}$ where the value corresponds to one, and for all other column vectors, the value at that index is zero.
+
+However, since we require that $\sum_{k = 1}^K a_{:, c} q_{k, c} \geq 0$, no element of $q_{:, c}$ can be negative, and this applies to any column $c \in \{1, ..., K\}$, so $Q$ must be non-negative.
+
+Second, since we require $\tilde{\mathbf{B}} \geq 0$, and $\mathbf{B} \geq 0$, and $\tilde{\mathbf{B}} = \mathbf{Q}^{-1} \mathbf{B}$, and Equation~\eqref{eq:cond2} must hold, we know that $\mathbf{Q}^{-1} \geq 0$. The proof is analogous to the proof above.
 
 Then, since $\mathbf{Q}$ and $\mathbf{Q}^{-1}$ are non-negative, Lemma 1.1 from \autocite{mincNonnegativeMatrices1988} states that $\mathbf{Q}$ must be a generalized permutation matrix, i.e. there exists some diagonal matrix $\mathbf{D} \in \mathbb{R}^{K \times K}$ and permuation matrix $\mathbf{P} \in \mathbb{R}^{K \times K}$ such that $\mathbf{Q} = \mathbf{D} \mathbf{P}$.
 
@@ -257,7 +297,7 @@ Then, this means that $\mathbf{Q}$ must be a permutation matrix since
 
 %Fourth, since we require $\tilde{\mathbf{B}} \mathbf{1}_K = \mathbf{1}_N = \mathbf{Q}^{-1} \mathbf{B} \mathbf{1}_N = \mathbf{1}_K$, we know that $\mathbf{Q}^{-1} \mathbf{1}_K = \mathbf{1}_K$ and thus $\mathbf{Q}^{-1} \in F(K, K)$ (i.e. $\mathbf{Q}^{-1}$ must be a row-stochastic matrix)
 
-Property 4 (Rewrite via convex hull of $\mathbf{Z}$): For some fixed $\mathbf{B} \in F(K, N)$, let the corresponding archetype matrix be $\mathbf{Z} = \mathbf{B} \mathbf{X}$. Then for the optimal $\mathbf{A} \in F(K, N)$, the objective  dfagfa
+Property 4 (Rewrite via convex hull of $\mathbf{Z}$): For some fixed $\mathbf{B} \in F(K, N)$, let the corresponding archetype matrix be $\mathbf{Z} = \mathbf{B} \mathbf{X}$. Then for the optimal $\mathbf{A} \in F(K, N)$, the objective
 
 \begin{equation}
     \begin{aligned}

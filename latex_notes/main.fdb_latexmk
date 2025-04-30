@@ -1,15 +1,15 @@
 # Fdb version 4
-["bibtex main"] 1746022505.4531 "main.aux" "main.bbl" "main" 1746022508.24135 0
-  "./main-blx.bib" 1746022507.87513 342 20d1170ef6c1d70c658d70e011e08dba ""
+["bibtex main"] 1746026431.63468 "main.aux" "main.bbl" "main" 1746026551.36915 0
+  "./main-blx.bib" 1746026551.0055 342 20d1170ef6c1d70c658d70e011e08dba ""
   "./zotero.bib" 1746022423.30833 75455 b44d717eb35e2a36c10ad151cf616133 ""
   "/usr/local/texlive/2024/texmf-dist/bibtex/bst/biblatex/biblatex.bst" 1711143581 65510 b1f696b0241395385f422f67543c37fd ""
-  "main.aux" 1746022507.87253 6180 67c39c2417b7f27c94739627df28b8bc "pdflatex"
+  "main.aux" 1746026551.00301 6182 534d8e4181f80b05b121a8783518f79d "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1746022506.90245 "/Users/pschafer/Projects/ParTIpy_paper/latex_notes/main.tex" "main.pdf" "main" 1746022508.24151 0
-  "/Users/pschafer/Projects/ParTIpy_paper/latex_notes/main.tex" 1746022502.42539 30690 836ba35297314e24f88a40bd25c7304c ""
+["pdflatex"] 1746026550.0309 "/Users/pschafer/Projects/ParTIpy_paper/latex_notes/main.tex" "main.pdf" "main" 1746026551.36931 0
+  "/Users/pschafer/Projects/ParTIpy_paper/latex_notes/main.tex" 1746026549.82946 32513 9bd301f1030513f517863f15b64d3a2d ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -171,11 +171,11 @@
   "/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1734470943 5485709 8129e419010b46b234085a26866cdb87 ""
   "/usr/local/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1734471100 3343725 94f61223f066be47c2c64bc7194f3706 ""
   "/usr/local/texlive/2024/texmf.cnf" 1710266656 577 e590dabc9e28c5b61546e15f63eebcdf ""
-  "main.aux" 1746022507.87253 6180 67c39c2417b7f27c94739627df28b8bc "pdflatex"
-  "main.bbl" 1746022505.54899 15218 d3564b750b9784bd5ec927cc3da66746 "bibtex main"
-  "main.out" 1746022507.87422 2411 35ba0ff9559f7d230ba0a98c6e557173 "pdflatex"
-  "main.run.xml" 1746022507.8757 2518 6344c09b66ab7d1cd6b8242f05e7b99f "pdflatex"
-  "main.tex" 1746022502.42539 30690 836ba35297314e24f88a40bd25c7304c ""
+  "main.aux" 1746026551.00301 6182 534d8e4181f80b05b121a8783518f79d "pdflatex"
+  "main.bbl" 1746026431.72739 15218 d3564b750b9784bd5ec927cc3da66746 "bibtex main"
+  "main.out" 1746026551.00459 2411 35ba0ff9559f7d230ba0a98c6e557173 "pdflatex"
+  "main.run.xml" 1746026551.00606 2518 6344c09b66ab7d1cd6b8242f05e7b99f "pdflatex"
+  "main.tex" 1746026549.82946 32513 9bd301f1030513f517863f15b64d3a2d ""
   (generated)
   "main-blx.bib"
   "main.aux"

@@ -36,7 +36,7 @@
   sortcites=true,
 ]{biblatex}
 \usepackage{url}       % Better URL formatting
-\addbibresource{ref.bib}
+\addbibresource{zotero.bib}
 
 % Include URLs in the bibliography entries
 \DeclareFieldFormat{url}{\url{#1}}
@@ -86,7 +86,7 @@
 \setlength{\parindent}{0ex}
 \setlength{\parskip}{1em}
 
-\title{Archetypal Analysis}
+\title{Notes on Archetypal Analysis}
 \author{Philipp Sven Lars Schäfer}
 \date{April 2025}
 
@@ -98,21 +98,25 @@
 
 Let $\mathcal{X}=\{\mathbf{x}_1, \ldots, \mathbf{x}_N\}_{n=1}^N$ be a data set consisting of $N$ $D$-dimensional data points, and let $\mathbf{X} \in \mathbb{R}^{N \times D}$ be the matrix where each row is a data point.
 
-In Archetypal Analysis we make two assumptions: 1) Each data point is a convex combination of $K$ archetypes; 2) Each archetype is a convex combination of $N$ data points.
+In Archetypal Analysis we make two assumptions:
+\begin{enumerate}
+    \item Each data point is a convex combination of $K$ archetypes;
+    \item Each archetype is a convex combination of $N$ data points.
+\end{enumerate}
 
 Expressing the first assumption in matrix notation yields
 \begin{equation}
 \label{eq:first-assumption}
-\hat{\mathbf{X}} = \mathbf{A} \mathbf{Z}
+\hat{\mathbf{X}} = \mathbf{A} \mathbf{Z} \quad \text{or} \quad \hat{\mathbf{x}}_n = \mathbf{Z}^T \mathbf{a_n} \text{ for } n = 1, ..., N
 \end{equation}
-where $\hat{\mathbf{X}} \in \mathbb{R}^{N \times D}$ is the reconstructed data matrix, $\mathbf{Z} \in \mathbb{R}^{K \times D}$ is the matrix of archetypes (i.e. each row is one archetype), and $\mathbf{A} \in \mathbb{R}^{N \times K}$ is a row-stochastic matrix that defines 
+where $\hat{\mathbf{X}} \in \mathbb{R}^{N \times D}$ is the reconstructed data matrix, $\mathbf{Z} \in \mathbb{R}^{K \times D}$ is the matrix of archetypes (i.e. each row is one archetype), and $\mathbf{A} \in \mathbb{R}^{N \times K}$ is a row-stochastic matrix that defines by which archetypes each data point is formed.
 
 Expressing the second assumption in matrix notation yields
 \begin{equation}
 \label{eq:second-assumption}
-\mathbf{Z} = \mathbf{B} \mathbf{X}
+\mathbf{Z} = \mathbf{B} \mathbf{X} \quad \text{or} \quad \mathbf{z}_k = \mathbf{X}^T \mathbf{b_k} \text{ for } k = 1, ..., K
 \end{equation}
-where $\mathbf{B} \in \mathbb{R}^{K \times N}$ is a row-stochastic matrix that defines 
+where $\mathbf{B} \in \mathbb{R}^{K \times N}$ is a row-stochastic matrix that defines by which data point each archetype is defined by.
 
 The reconstruction error is most commonly measured using the residual sum of squares (RSS), given by the squared Frobenius norm,
 
@@ -137,7 +141,7 @@ Introducing the set of row-stochastic non-negative matrices,
     F(N, K) := \left\{ \mathbf{A} \in \mathbb{R}^{N \times K} \mid  \mathbf{A} \geq 0 \land \mathbf{A} \mathbf{1}_K = \mathbf{1}_N \right\}
 \end{equation}
 
-we can write the objective more compactly as:
+we can write the objective compactly as:
 
 \begin{equation}
     \begin{aligned}
@@ -145,8 +149,6 @@ we can write the objective more compactly as:
         \mathbf{B} \in F(K, N) \end{subarray}}{\arg \min} \| \mathbf{X} - \mathbf{A} \mathbf{B} \mathbf{X}\|_F^2
     \end{aligned}
 \end{equation}
-
-%We can equivalently write the objective as ... (min with over x where x in conv hull of the current archetypes)
 
 \section{Properties of the Objective}
 
@@ -178,7 +180,7 @@ Since $\mathbf{B} \mathbf{1}_N = \mathbf{1}_K$ and  $\mathbf{A} \mathbf{1}_K = \
     \end{aligned}
 \end{equation}
 
-Therefore, the reconstruction error remains unchanged, and the minimizers $\mathbf{A}^\star, \mathbf{B}^\star$ are invariant under such translations.
+Therefore, the reconstruction error remains unchanged, and the minimizers $\mathbf{A}^\star, \mathbf{B}^\star$ are invariant under such translations. Thus, the minimizers $\mathbf{A}^\star, \mathbf{B}^\star$ are invariant to centering the data.
 
 Property 2 (Scale invariance): The minimizers $\mathbf{A}^\star, \mathbf{B}^\star$ of the objective are invariant under global scaling of $\mathbf{X}$. Let $\tilde{\mathbf{X}} = \lambda \mathbf{X}$ for any $\lambda \neq 0$, then
 
@@ -204,20 +206,83 @@ Thus the objective for the scaled matrix is given by
     \underset{\begin{subarray}{c} \mathbf{A} \in F(N, K) \\ \mathbf{B} \in F(K, N) \end{subarray}}{\arg \min} \| \tilde{\mathbf{X}} - \mathbf{A} \mathbf{B} \tilde{\mathbf{X}} \|_F^2 = \underset{\begin{subarray}{c} \mathbf{A} \in F(N, K) \\ \mathbf{B} \in F(K, N) \end{subarray}}{\arg \min} \lambda^2 \| \mathbf{X} - \mathbf{A} \mathbf{B} \mathbf{X} \|_F^2
 \end{equation}
 
-Since we assumed $\lambda \neq 0$, $\lambda^2$ will always be a positive scalar. Multiplying the objective by any positive scalar does not change the location of its minimum, since the ordering of function values is preserved. Thus we have
+Since $\lambda \neq 0$, we have $\lambda^2 > 0$, and thus the objective is scaled by a positive constant. Multiplying the objective function by a positive scalar does not affect the location of its minimum, because the ordering of objective values is preserved. In particular, the first-order (stationarity) and second-order (convexity/curvature) necessary conditions for optimality remain unchanged under such scaling. 
+
+Property 3 (unique up to permutation of archetypes / No rotational ambiguity) 
+
+Assuming that for each archetypes there exists one data point that only belong to this archetype
 
 \begin{equation}
-    \underset{\begin{subarray}{c} \mathbf{A} \in F(N, K) \\ \mathbf{B} \in F(K, N) \end{subarray}}{\arg \min} \| \tilde{\mathbf{X}} - \mathbf{A} \mathbf{B} \tilde{\mathbf{X}} \|_F^2 = \underset{\begin{subarray}{c} \mathbf{A} \in F(N, K) \\ \mathbf{B} \in F(K, N) \end{subarray}}{\arg \min} \| \mathbf{X} - \mathbf{A} \mathbf{B} \mathbf{X} \|_F^2
+    \label{eq:cond1}
+    \forall k \in \{1, ..., K\} \exists n \in \{1, ..., N\} \; a_{n k} > 0 \; \land \; a_{a k^\prime} = 0 \forall k^\prime \neq k
 \end{equation}
 
+and that for each archetype there exists one data point that is only used to define this archetype and not any other archetype
 
-Property 3 (Rewrite using convex hull of $\mathbf{Z}$)
+\begin{equation}
+    \label{eq:cond2}
+    \forall k \in \{1, ..., K\} \exists n \in \{1, ..., N\} \; z_{k n} > 0 \; \land \; z_{k^\prime n} = 0 \forall k^\prime \neq k
+\end{equation}
 
-Proof, 
+then the objective does not suffer from rotational ambiguity. 
+
+Note, these conditions mean that both $\mathbf{A}$ and $\mathbf{B}$ have rank $K$ (i.e. $K$ linearly indendent columns / rows).
+
+Let $\mathbf{Q} \in \mathbf{R}^{K \times K}$ be some invertible matrix
+
+\begin{equation}
+    \mathbf{A} \mathbf{B} \mathbf{X} = \mathbf{A} \mathbf{Q} \mathbf{Q}^{-1} \mathbf{B} \mathbf{X} = \tilde{\mathbf{A}} \tilde{\mathbf{B}} \mathbf{X}
+\end{equation}
+
+Requiring that $\tilde{\mathbf{A}} \in F(N, K)$ and $\tilde{\mathbf{B}} \in F(K, N)$ (i.e. that both $\tilde{\mathbf{A}}$, $\tilde{\mathbf{B}}$ are still row-stochastic), we can derive the following properties that $\mathbf{Q}$ must fullfull.
+
+First, since we require $\tilde{\mathbf{A}} \geq 0$, and $\mathbf{A} \geq 0$, and $\tilde{\mathbf{A}} = \mathbf{A} \mathbf{Q}^{-1}$, and Equation~\eqref{eq:cond1} must hold, we know that $\mathbf{Q} \geq 0$.
+
+Second, since we require $\tilde{\mathbf{B}} \geq 0$, and $\mathbf{B} \geq 0$, and $\tilde{\mathbf{B}} = \mathbf{Q}^{-1} \mathbf{B}$, and Equation~\eqref{eq:cond2} must hold, we know that $\mathbf{Q}^{-1} \geq 0$.
+
+Then, since $\mathbf{Q}$ and $\mathbf{Q}^{-1}$ are non-negative, Lemma 1.1 from \autocite{mincNonnegativeMatrices1988} states that $\mathbf{Q}$ must be a generalized permutation matrix, i.e. there exists some diagonal matrix $\mathbf{D} \in \mathbb{R}^{K \times K}$ and permuation matrix $\mathbf{P} \in \mathbb{R}^{K \times K}$ such that $\mathbf{Q} = \mathbf{D} \mathbf{P}$.
+
+Third, since we require $\tilde{\mathbf{A}} \mathbf{1}_K = \mathbf{1}_N = \mathbf{A} \mathbf{Q} \mathbf{1}_K = \mathbf{1}_N$, we know that $\mathbf{Q} \mathbf{1}_K = \mathbf{1}_K$ and thus $\mathbf{Q} \in F(K, K)$ (i.e. $\mathbf{Q}$ must be a row-stochastic matrix)
+
+Then, this means that $\mathbf{Q}$ must be a permutation matrix since 
+
+\begin{equation}
+    \begin{aligned}
+        &\mathbf{Q} \mathbf{1}_K = \mathbf{1}_K \\
+        \rightarrow &\mathbf{D} \mathbf{P} \mathbf{1}_K = \mathbf{1}_K \\
+        \rightarrow &\mathbf{D} \mathbf{1}_K = \mathbf{1}_K \\
+        \rightarrow &\mathbf{D} = \mathbf{I}_K
+    \end{aligned}
+\end{equation}
+
+%Fourth, since we require $\tilde{\mathbf{B}} \mathbf{1}_K = \mathbf{1}_N = \mathbf{Q}^{-1} \mathbf{B} \mathbf{1}_N = \mathbf{1}_K$, we know that $\mathbf{Q}^{-1} \mathbf{1}_K = \mathbf{1}_K$ and thus $\mathbf{Q}^{-1} \in F(K, K)$ (i.e. $\mathbf{Q}^{-1}$ must be a row-stochastic matrix)
+
+Property 4 (Rewrite via convex hull of $\mathbf{Z}$): For some fixed $\mathbf{B} \in F(K, N)$, let the corresponding archetype matrix be $\mathbf{Z} = \mathbf{B} \mathbf{X}$. Then for the optimal $\mathbf{A} \in F(K, N)$, the objective  dfagfa
+
+\begin{equation}
+    \begin{aligned}
+    \| \mathbf{X} - \mathbf{A} \mathbf{B} \mathbf{X} \|_F^2 
+    &= \sum_{n=1}^N \| \mathbf{x}_n - \mathbf{Z}^T \mathbf{a}_n \|_2^2 \\
+    &= \sum_{n=1}^N \left\| \mathbf{x}_n - \sum_{k=1}^K a_{nk} \mathbf{z}_k \right\|_2^2
+    \end{aligned}
+\end{equation}
+
+is equivalent to
+
+\begin{equation}
+    \begin{aligned}
+    \| \mathbf{X} - \mathbf{A} \mathbf{B} \mathbf{X} \|_F^2 
+    &= \sum_{n=1}^N \min_{\mathbf{q} \in \text{conv}(\mathcal{Z})} \left\| \mathbf{x}_n - \mathbf{q} \right\|_2^2
+    \end{aligned}
+\end{equation}
+
+Thus, for fixed $\mathbf{B}$, the optimal $\mathbf{A}$ assigns each data point to its Euclidean projection onto the convex hull of the archetypes $\mathbf{z}_1, ..., \mathbf{z}_K$. Any point $x_n \in \text{conv}(\mathcal{Z})$ does not contribute to the loss.
+
+
 
 \section{Optimization}
 
-While this objective is an NP-hard Euclidean sum of square clustering problem \autocite{aloiseNPhardnessEuclideanSumofsquares2009}, several practical optimization approaches have been developed that exploit that this objective is biconvex, meaning that it is convex in $\mathbf{A}$ if we fix $\mathbf{B}$ and vice versa. See Section 5 in Cutler \& Breiman (1994) \autocite{cutlerArchetypalAnalysis1994} or Section 2 in Mørup \& Hansen (2012) \autocite{morupArchetypalAnalysisMachine2012}. One way to optimize such a biconvex objective is to initialize $\mathbf{A}$, $\mathbf{B}$, and then alternating between solving the convex optimization problem in one variable fixing the other variable, and vice versa.
+While this objective is an Euclidean sum of square clustering problem which have been proven to be NP-hard\autocite{aloiseNPhardnessEuclideanSumofsquares2009}, several practical optimization approaches have been developed that exploit that this objective is biconvex, meaning that it is convex in $\mathbf{A}$ if we fix $\mathbf{B}$ and vice versa. See Section 5 in Cutler \& Breiman (1994) \autocite{cutlerArchetypalAnalysis1994} or Section 2 in Mørup \& Hansen (2012) \autocite{morupArchetypalAnalysisMachine2012} for more details. One way to optimize such a biconvex objective is to initialize $\mathbf{A}$, $\mathbf{B}$, and then alternating between solving the convex optimization problem in one variable fixing the other variable, and vice versa.
 
 \subsection{Gradient of the Objective}
 
@@ -420,6 +485,16 @@ As described above, the objective is convex in $\mathbf{A}$ when fixing $\mathbf
 
 \subsection{Furthest Sum}
 
+\section{Weighted Archetypal Analysis}
+
+TODO
+
+\section{Dataset Size Reduction Methods}
+
+\subsection{Coresets}
+
+TODO
+
 \section{References}
 
 \printbibliography[heading=none]
@@ -435,13 +510,14 @@ As described above, the objective is convex in $\mathbf{A}$ when fixing $\mathbf
     \item $\mathcal{X}=\{\mathbf{x}_1, \ldots, \mathbf{x}_N\}_{n=1}^N$ is our dataset, where each $\mathbf{x}_n \in \mathbb{R}^D$
     \item $\mathbf{X} \in \mathbb{R}^{N \times D}$ is our data matrix where each row is one sample
     \item $\mathbf{Z} \in \mathbb{R}^{K \times D}$ is our matrix of archetypes where each row is one archetype
+    \item $\mathcal{Z}=\{\mathbf{z}_1, \ldots, \mathbf{z}_K\}_{k=1}^K$ is set of archetypes, where each $\mathbf{z}_k \in \mathbb{R}^D$
 \end{itemize}
 
 \subsection{Algorithms}
 
 \begin{algorithm}
 \caption{Principal Convex Hull Algorithm (PCHA)}
-\label{alg:pcha}
+\label{alg:pcha_short}
 \begin{algorithmic}[1]
 \Require Data matrix $\mathbf{X} \in \mathbb{R}^{N \times D}$, learning rates $\mu_{\mathbf{A}} > 0$, $\mu_{\mathbf{B}} > 0$
 \State Initialize $\mathbf{A}, \mathbf{B}$

@@ -83,7 +83,7 @@
       <file>main-blx.bib</file>
     </requires>
     <requires type="editable">
-      <file>ref.bib</file>
+      <file>zotero.bib</file>
     </requires>
     <requires type="static">
       <file>biblatex.bst</file>

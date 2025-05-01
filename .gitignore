@@ -1,6 +1,8 @@
 .vscode/
+.DS_Store
 
 *.sqlite
 *.txt.gz
 *.txt
-data/
+data/*
+.Rproj.user

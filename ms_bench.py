@@ -1,7 +1,9 @@
 from pathlib import Path
 import time
+import pickle
 
 from tqdm import tqdm
+import numpy as np
 import pandas as pd
 import scanpy as sc
 import partipy as pt
@@ -74,8 +76,11 @@ assert set(celltype_labels) == set(number_of_pcs_dict.keys())
 
 ## initialize list to save the benchmarking results
 result_list = []
+rss_trace_dict = {}
 
 for celltype in celltype_labels:
+
+    rss_trace_dict[celltype] = {}
 
     ## set up plotting directory per celltype
     figure_dir_celltype = figure_dir / celltype
@@ -124,6 +129,8 @@ for celltype in celltype_labels:
     print("Running the benchmark...")
     for optim_dict in optim_settings_list:
         print("\n\t", optim_dict)
+        optim_key = "__".join(list(optim_dict.values()))
+        rss_trace_dict[celltype][optim_key] = {}
         for seed in tqdm(seed_list):
             print(seed)
 
@@ -144,6 +151,8 @@ for celltype in celltype_labels:
             end_time = time.time()
             execution_time = end_time - start_time
 
+            rss_trace_dict[celltype][optim_key][seed] = adata_bench.uns["archetypal_analysis"]["RSS"]
+
             result_dict = {
                 "celltype": celltype,
                 "time": execution_time,
@@ -152,6 +161,7 @@ for celltype in celltype_labels:
                 "seed": seed,
                 "n_samples": adata_bench.shape[0],
                 "n_dimensions": number_of_pcs_dict[celltype],
+                "n_archetypes": number_of_archetypes_dict[celltype],
             }
             result_dict = result_dict | optim_dict
             result_list.append(result_dict)
@@ -159,14 +169,19 @@ for celltype in celltype_labels:
 result_df = pd.DataFrame(result_list)
 result_df.to_csv(output_dir / "results.csv", index=False)
 
-# Compute mean and std
+with open(output_dir / "rss_trace_dict.pkl", "wb") as f:
+    pickle.dump(rss_trace_dict, f)
+
+## plot for the optimization results
+# result_df = pd.read_csv(Path(OUTPUT_PATH) / "ms_bench" / "results.csv")
+result_df["key"] = [init + "__" + optim for init, optim in zip(result_df["init_alg"], result_df["optim_alg"])]
 settings = ["celltype", "init_alg", "optim_alg"]
 features = ["time", "rss", "varexpl"]
 agg_df = result_df.groupby(settings).agg({f: ["mean", "std"] for f in features})
 agg_df.columns = ['_'.join(col).strip() for col in agg_df.columns.values]
 agg_df = agg_df.reset_index()
 
-p_rss = (
+p = (
     pn.ggplot(agg_df)
     + pn.geom_point(pn.aes(x="time_mean", y="rss_mean", color="optim_alg", shape="init_alg"), size=4)
     + pn.geom_errorbar(
@@ -179,7 +194,50 @@ p_rss = (
     + pn.labs(x="Time (s)", y="Residual Sum of Squares (RSS)", 
               color="Optimization Algorithm", shape="Initialization Algorithm") 
     + pn.theme_bw() 
-    + pn.theme(figure_size=(13, 4)) 
+    + pn.theme(figure_size=(12, 6)) 
     + pn.scale_color_manual(values={"projected_gradients": "green", "frank_wolfe": "blue"})
 )
 p.save(figure_dir / f"result.png", dpi=300)
+
+## plot for the optimization traces
+#with open(Path(OUTPUT_PATH) / "ms_bench" / "rss_trace_dict.pkl", "rb") as f:
+#    rss_trace_dict = pickle.load(f)
+
+celltype_list = list(rss_trace_dict.keys())
+
+for celltype in celltype_list:
+
+    celltype_result_list = []
+
+    rss_trace_dict_celltype = rss_trace_dict[celltype]
+
+    result_df_subset = result_df.loc[result_df["celltype"]==celltype, :]
+    n_samples = result_df_subset["n_samples"].to_numpy()[0]
+    n_dimensions = result_df_subset["n_dimensions"].to_numpy()[0]
+    #n_archetypes = result_df_subset["n_archetypes"].to_numpy()[0]
+    n_archetypes = 5
+    figure_title = f"{celltype} | n_cells = {n_samples} | n_dimensions = {n_dimensions} | n_archetypes = {n_archetypes}"
+    
+    for optim_str, rss_per_seed_dict in rss_trace_dict_celltype.items():
+
+
+        for seed, trace in rss_per_seed_dict.items():
+            tmp_df = pd.DataFrame({"optim": optim_str, "seed": seed, "iter": np.arange(len(trace)), "rss_trace": trace})
+            celltype_result_list.append(tmp_df)
+
+    df = pd.concat(celltype_result_list)
+    df["seed"] = pd.Categorical(df["seed"])
+
+    df["optim"] = pd.Categorical(df["optim"], 
+                                categories=[b + "__" + a for a in pt.const.OPTIM_ALGS for b in pt.const.INIT_ALGS])
+    
+    p = (pn.ggplot(df)
+        + pn.geom_hline(yintercept=min(df["rss_trace"]), color="black", alpha=0.5, size=1)
+        + pn.geom_line(pn.aes(x="iter", y="rss_trace", color="seed"), alpha=1.0, size=0.5)
+        + pn.scale_y_log10()
+        + pn.facet_wrap("optim")
+        + pn.theme_bw()
+        + pn.theme(figure_size=(10, 6))
+        + pn.labs(x="Iteration", y="Residual Sum of Squares (RSS)", color="seed", title=figure_title)
+        )
+    p.save(figure_dir / f"rss_trace_{celltype}.png", dpi=300)

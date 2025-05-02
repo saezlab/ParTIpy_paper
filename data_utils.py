@@ -1,5 +1,6 @@
 import os
 import tarfile
+import zipfile
 import hashlib
 from pathlib import Path
 
@@ -166,3 +167,38 @@ def load_hepatocyte_data(use_cache: bool = True):
     adata = adata[~adata.obs["batch"].isin(["AB630", "AB631"])].copy()
 
     return adata
+
+
+def load_ms_xenium_data(use_cache=True):
+    data_dir = Path(".") / DATA_PATH
+    data_dir.mkdir(exist_ok=True)
+
+    zip_filename = "MS_xenium_data_v5_with_images_tmap.h5ad.zip"
+    h5ad_filename = "MS_xenium_data_v5_with_images_tmap.h5ad"
+    
+    zip_path = data_dir / zip_filename
+    file_path = data_dir / h5ad_filename
+    url = "https://zenodo.org/records/8037425/files/MS_xenium_data_v5_with_images_tmap.h5ad.zip?download=1"
+
+    # Download if needed
+    if file_needs_download(zip_path, EXPECTED_CHECKSUMS[zip_filename]) or not use_cache:
+        print(f"Downloading from {url} to {zip_path}...")
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        with open(zip_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print("Download complete.")
+    else:
+        print(f"Zip file already exists: {zip_path}")
+
+    # Extract if H5AD missing or invalid
+    if file_needs_download(file_path, EXPECTED_CHECKSUMS[h5ad_filename]) or not use_cache:
+        print(f"Extracting {zip_path}...")
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(data_dir)
+        print(f"File extracted to {file_path}")
+    else:
+        print(f"Extracted H5AD file already valid: {file_path}")
+
+    return sc.read_h5ad(file_path)

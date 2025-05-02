@@ -1,8 +1,13 @@
 .vscode/
+.Rproj.user
 .DS_Store
+
+__pycache__/
+
+data/*
 
 *.sqlite
 *.txt.gz
 *.txt
-data/*
-.Rproj.user
+*.csv
+*.pkl

@@ -11,17 +11,17 @@ import plotnine as pn
 import matplotlib
 import matplotlib.pyplot as plt
 
-from data_utils import load_ms_data
+from data_utils import load_ms_xenium_data
 from const import FIGURE_PATH, OUTPUT_PATH
 
 ## set up backend for matplotlib: https://matplotlib.org/stable/users/explain/figure/backends.html
 matplotlib.use("Agg")
 
 ## set up output directory
-figure_dir = Path(FIGURE_PATH) / "ms_bench"
+figure_dir = Path(FIGURE_PATH) / "ms_bench_xenium"
 figure_dir.mkdir(exist_ok=True, parents=True)
 
-output_dir = Path(OUTPUT_PATH) / "ms_bench"
+output_dir = Path(OUTPUT_PATH) / "ms_bench_xenium"
 output_dir.mkdir(exist_ok=True, parents=True)
 
 ## setting up the optimization seetings
@@ -48,35 +48,69 @@ script_start_time = time.time()
 print(f"### Start Time: {script_start_time}")
 
 ## downloading the data (or using cached data)
-atlas_adata = load_ms_data()
+atlas_adata = load_ms_xenium_data()
 print(atlas_adata)
 
 ## qc settings
-qc_columns = ["lesion_type", "subtype"]
+qc_columns = ["type_spec", "Level3"]
 
-## cell types to consider
+## remap the cell type annotation to broader categories
+mapping_dict = {
+    "MP/MiGl_1": "Myeloid",
+    "MP/MiGl_2": "Myeloid",
+    "vascular_MP_1":"Myeloid",
+    "vascular_MP_2": "Myeloid",
+    "vascular_MP_3": "Myeloid",
+    "Vascular_1": "Vascular",
+    "Vascular_2": "Vascular",
+    "Astro_WM": "Astrocyte",
+    "Astro_GM": "Astrocyte",
+    "Astro_WM_DA": "Astrocyte",
+    "Astro_GM_DA": "Astrocyte",
+    "OLG_WM": "Oligo",
+    "OLG_WM_DA": "Oligo",
+    "OLG_GM": "Oligo",
+    "OPC": "OPC",
+    "OPC_DA": "OPC",
+    "COP": "COP",
+    "NFOL/MFOL": "NFOL",
+    "Schw": "Schwann",
+    "Endo": "Endothelial",
+    "Neurons": "Neurons",
+    "vascular_T-cell": "T_cell",
+    "T-cell": "T_cell",
+    "Ependymal": "Ependymal",
+    "unknown": "unknown",
+}
+
+atlas_adata.obs["celltype"] = atlas_adata.obs["Level2"].map(mapping_dict)
+
 celltype_column = "celltype"
-celltype_labels = ["MG", "AS", "OL", "OPC", "NEU", "EC"]
+celltype_labels = ["Oligo", "Astrocyte", "Myeloid", "Vascular", "Schwann", "OPC", "Endothelial", "T_cell"]
 print(atlas_adata.obs.value_counts(celltype_column))
 
 ## number of archetypes per celltype
 archetypes_to_test = list(range(2, 15))
 number_of_archetypes_dict = {
-    "MG": 7,
-    "AS": 11,
-    "OL": 5,
+    "Oligo": 4,
+    "Astrocyte": 4,
+    "Myeloid": 5,
+    "Vascular": 5,
+    "Schwann": 4,
     "OPC": 5,
-    "NEU": 9,
-    "EC": 4,
+    "Endothelial": 3,
+    "T_cell": 4,
 }
 assert set(celltype_labels) == set(number_of_archetypes_dict.keys())
 number_of_pcs_dict = {
-    "MG": 10,
-    "AS": 10,
-    "OL": 10,
+    "Oligo": 10,
+    "Astrocyte": 10,
+    "Myeloid": 10,
+    "Vascular": 10,
+    "Schwann": 10,
     "OPC": 10,
-    "NEU": 10,
-    "EC": 10,
+    "Endothelial": 10,
+    "T_cell": 10,
 }
 assert set(celltype_labels) == set(number_of_pcs_dict.keys())
 
@@ -93,22 +127,20 @@ for celltype in celltype_labels:
     figure_dir_celltype.mkdir(exist_ok=True)
 
     ## subsetting and preprocessing per celltype
+    ## NOTE: For Xenium data we do not need to select highly variable genes before PCA
     adata = atlas_adata[atlas_adata.obs[celltype_column]==celltype, :].copy()
     print("\n#####\n->", celltype, "\n", adata)
     sc.pp.normalize_total(adata)
     sc.pp.log1p(adata)
-    sc.pp.highly_variable_genes(adata)
-    sc.pp.pca(adata, mask_var="highly_variable")
+    sc.pp.pca(adata)
 
     ## some scanpy QC plots
     for qc_var in qc_columns:
         adata.obs[qc_var] = pd.Categorical(adata.obs[qc_var])
-    sc.pl.highly_variable_genes(adata, log=False, show=False, save=False)
-    plt.savefig(figure_dir_celltype / "highly_variable_genes.png")
     sc.pl.pca_variance_ratio(adata, n_pcs=50, log=False, show=False, save=False)
     plt.savefig(figure_dir_celltype / "pca_var_explained.png")
     sc.pl.pca(adata, color=qc_columns, dimensions=[(0, 1), (0, 1)],
-              ncols=2, size=10, alpha=0.75, show=False, save=False)
+              ncols=2, size=8, alpha=0.50, show=False, save=False)
     plt.savefig(figure_dir_celltype / "pca_2D.png")
 
     ## for simplicity we will always use 10 principal components
@@ -123,10 +155,10 @@ for celltype in celltype_labels:
     p = pt.plot_IC(adata)
     p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
 
-    print("Running the boostrap...")
-    pt.bootstrap_aa_multiple_k(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=10)
-    p = pt.plot_bootstrap_multiple_k(adata)
-    p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
+    #print("Running the boostrap...")
+    #pt.bootstrap_aa_multiple_k(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=10)
+    #p = pt.plot_bootstrap_multiple_k(adata)
+    #p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
 
     ## QC plot for the number of archetypes in 2D
     pt.bootstrap_aa(adata=adata, n_bootstrap=20, n_archetypes=number_of_archetypes_dict[celltype], n_jobs=20)

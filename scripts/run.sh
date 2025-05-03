@@ -58,3 +58,6 @@ mamba activate partipy
 ## run python scripts
 echo "python ms_bench.py"
 python ms_bench.py
+
+echo "python ms_xenium_bench.py"
+python ms_xenium_bench.py

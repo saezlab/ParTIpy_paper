@@ -12,16 +12,16 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 from data_utils import load_ms_xenium_data
-from const import FIGURE_PATH, OUTPUT_PATH
+from const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
 
 ## set up backend for matplotlib: https://matplotlib.org/stable/users/explain/figure/backends.html
 matplotlib.use("Agg")
 
 ## set up output directory
-figure_dir = Path(FIGURE_PATH) / "ms_bench_xenium"
+figure_dir = Path(FIGURE_PATH) / "ms_xenium_bench"
 figure_dir.mkdir(exist_ok=True, parents=True)
 
-output_dir = Path(OUTPUT_PATH) / "ms_bench_xenium"
+output_dir = Path(OUTPUT_PATH) / "ms_xenium_bench"
 output_dir.mkdir(exist_ok=True, parents=True)
 
 ## setting up the optimization seetings
@@ -39,10 +39,7 @@ for init_alg in init_alg_list:
 print(f"{len(optim_settings_list)=}")
 
 ## setting up different seeds to test
-seed_list = [383329927, 3324115916, 2811363264, 1884968544, 1859786275, 
-             3687649985, 369133708, 2995172877, 865305066, 404488628,
-             2261209995, 4190266092, 3160032368, 3269070126, 3081541439, 
-             3376120482, 2204291346, 550243861, 3606691181, 1934392872]
+seed_list = SEED_DICT["m"]
 
 script_start_time = time.time()
 print(f"### Start Time: {script_start_time}")

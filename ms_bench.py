@@ -109,7 +109,7 @@ for celltype in celltype_labels:
     plt.savefig(figure_dir_celltype / "pca_2D.png")
 
     ## for simplicity we will always use 10 principal components
-    pt.set_dimension_aa(adata=adata, n_pcs=number_of_pcs_dict[celltype])
+    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=number_of_pcs_dict[celltype])
 
     ## check for the number of archetypes
     pt.var_explained_aa(adata=adata, min_a=archetypes_to_test[0], max_a=archetypes_to_test[-1], n_jobs=20)
@@ -157,13 +157,13 @@ for celltype in celltype_labels:
             end_time = time.time()
             execution_time = end_time - start_time
 
-            rss_trace_dict[celltype][optim_key][seed] = adata_bench.uns["archetypal_analysis"]["RSS"]
+            rss_trace_dict[celltype][optim_key][seed] = adata_bench.uns["AA_results"]["RSS"]
 
             result_dict = {
                 "celltype": celltype,
                 "time": execution_time,
-                "rss": adata_bench.uns["archetypal_analysis"]["RSS"][-1],
-                "varexpl": adata_bench.uns["archetypal_analysis"]["varexpl"],
+                "rss": adata_bench.uns["AA_results"]["RSS"][-1],
+                "varexpl": adata_bench.uns["AA_results"]["varexpl"],
                 "seed": seed,
                 "n_samples": adata_bench.shape[0],
                 "n_dimensions": number_of_pcs_dict[celltype],
@@ -180,30 +180,58 @@ with open(output_dir / "rss_trace_dict.pkl", "wb") as f:
 
 ## plot for the optimization results
 # result_df = pd.read_csv(Path(OUTPUT_PATH) / "ms_bench" / "results.csv")
+result_df["description"] = [celltype + " | " + str(n_samples) + " | " + str(n_arch) + " | " + str(n_dim) for celltype, n_samples, n_arch, n_dim in 
+                            zip(result_df["celltype"], result_df["n_samples"], result_df["n_archetypes"], result_df["n_dimensions"])]
+result_df["rss_norm"] = result_df["rss"] / (result_df["n_samples"] * result_df["n_dimensions"])
 result_df["key"] = [init + "__" + optim for init, optim in zip(result_df["init_alg"], result_df["optim_alg"])]
-settings = ["celltype", "init_alg", "optim_alg"]
-features = ["time", "rss", "varexpl"]
+
+# Grouping and aggregation
+settings = ["description", "init_alg", "optim_alg"]
+features = ["time", "rss", "varexpl", "rss_norm"]
 agg_df = result_df.groupby(settings).agg({f: ["mean", "std"] for f in features})
-agg_df.columns = ['_'.join(col).strip() for col in agg_df.columns.values]
+agg_df.columns = ['__'.join(col).strip() for col in agg_df.columns.values]
 agg_df = agg_df.reset_index()
+
+# Precompute error bar limits
+agg_df["rss__ymin"] = agg_df["rss__mean"] - agg_df["rss__std"]
+agg_df["rss__ymax"] = agg_df["rss__mean"] + agg_df["rss__std"]
+agg_df["rss_norm__ymin"] = agg_df["rss_norm__mean"] - agg_df["rss_norm__std"]
+agg_df["rss_norm__ymax"] = agg_df["rss_norm__mean"] + agg_df["rss_norm__std"]
+agg_df["time__xmin"] = agg_df["time__mean"] - agg_df["time__std"]
+agg_df["time__xmax"] = agg_df["time__mean"] + agg_df["time__std"]
+
 
 p = (
     pn.ggplot(agg_df)
-    + pn.geom_point(pn.aes(x="time_mean", y="rss_mean", color="optim_alg", shape="init_alg"), size=4)
+    + pn.geom_point(pn.aes(x="time__mean", y="rss__mean", color="optim_alg", shape="init_alg"), size=4)
     + pn.geom_errorbar(
-        pn.aes(x="time_mean", ymin="rss_mean - rss_std", ymax="rss_mean + rss_std", color="optim_alg"),
-        width=0.1)
+        pn.aes(x="time__mean", ymin="rss__ymin", ymax="rss__ymax", color="optim_alg"), width=0)
     + pn.geom_errorbarh(
-        pn.aes(y="rss_mean", xmin="time_mean - time_std", xmax="time_mean + time_std", color="optim_alg"),
-        height=0.1)
-    + pn.facet_wrap(facets="celltype", ncol=3, scales="free")
+        pn.aes(y="rss__mean", xmin="time__xmin", xmax="time__xmax", color="optim_alg"), height=0)
+    + pn.facet_wrap(facets="description", ncol=3, scales="free")
     + pn.labs(x="Time (s)", y="Residual Sum of Squares (RSS)", 
               color="Optimization Algorithm", shape="Initialization Algorithm") 
     + pn.theme_bw() 
     + pn.theme(figure_size=(12, 6)) 
     + pn.scale_color_manual(values={"projected_gradients": "green", "frank_wolfe": "blue"})
 )
-p.save(figure_dir / f"result.png", dpi=300)
+p.save(figure_dir / f"rss_vs_time.png", dpi=300)
+
+p = (
+    pn.ggplot(agg_df)
+    + pn.geom_point(pn.aes(x="time__mean", y="rss_norm__mean", color="optim_alg", shape="init_alg"), size=4)
+    + pn.geom_errorbar(
+        pn.aes(x="time__mean", ymin="rss_norm__ymin", ymax="rss_norm__ymax", color="optim_alg"), width=0)
+    + pn.geom_errorbarh(
+        pn.aes(y="rss_norm__mean", xmin="time__xmin", xmax="time__xmax", color="optim_alg"), height=0)
+    + pn.facet_wrap(facets="description", ncol=3, scales="free")
+    + pn.labs(x="Time (s)", y="Normalized Residual Sum of Squares (RSS)", 
+              color="Optimization Algorithm", shape="Initialization Algorithm") 
+    + pn.theme_bw() 
+    + pn.theme(figure_size=(12, 6)) 
+    + pn.scale_color_manual(values={"projected_gradients": "green", "frank_wolfe": "blue"})
+)
+p.save(figure_dir / f"normalized_rss_vs_time.png", dpi=300)
 
 ## plot for the optimization traces
 #with open(Path(OUTPUT_PATH) / "ms_bench" / "rss_trace_dict.pkl", "rb") as f:

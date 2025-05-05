@@ -17,4 +17,4 @@ dependencies:
   - pip:
     - decoupler==1.9.2
     - liana==1.5.1
-    - git+https://github.com/saezlab/ParTIpy@9c5859d51cc56c2b2728a2f5d22fcc7a422540b7 # hardcoded the commit
+    - git+https://github.com/saezlab/ParTIpy@317f973a077148c4ac4b8caf14caa68ae88f0100 # hardcoded the commit

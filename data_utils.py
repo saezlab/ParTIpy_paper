@@ -169,7 +169,7 @@ def load_hepatocyte_data(use_cache: bool = True):
     return adata
 
 
-def load_ms_xenium_data(use_cache=True):
+def load_ms_xenium_data(use_cache=True, data_dir=Path(".") / DATA_PATH):
     data_dir = Path(".") / DATA_PATH
     data_dir.mkdir(exist_ok=True)
 

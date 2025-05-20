@@ -61,3 +61,6 @@ python ms_bench.py
 
 echo "python ms_xenium_bench.py"
 python ms_xenium_bench.py
+
+echo "python ms_coreset.py"
+python ms_coreset.py

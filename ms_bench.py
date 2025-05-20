@@ -59,7 +59,7 @@ print(atlas_adata.obs.value_counts(celltype_column))
 ## number of archetypes per celltype
 archetypes_to_test = list(range(2, 15))
 number_of_archetypes_dict = {
-    "MG": 7,
+    "MG": 6,
     "AS": 11,
     "OL": 5,
     "OPC": 5,

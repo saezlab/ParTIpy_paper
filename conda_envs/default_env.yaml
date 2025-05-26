@@ -1,6 +1,5 @@
 channels: # https://mamba.readthedocs.io/en/latest/user_guide/troubleshooting.html#using-the-defaults-channels
   - conda-forge
-  - bioconda
 dependencies:
   #- nomkl==1.0 # only for macOS, see https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dylib-but-found-libiomp5-dylib-already-initial
   - conda-forge::python==3.11
@@ -13,8 +12,9 @@ dependencies:
   - conda-forge::pandas==2.2.3
   - conda-forge::matplotlib==3.10.1
   - conda-forge::plotnine==0.14.5
+  - conda-forge::plotly==6.1.1
   - pip
   - pip:
-    - decoupler==1.9.2
+    - decoupler==2.0.1
     - liana==1.5.1
-    - git+https://github.com/saezlab/ParTIpy@a5636f61672959d885f344156c9818492e8f35d8 # hardcoded the commit
+    - git+https://github.com/saezlab/ParTIpy@d0c89df2c11cd1ea0666bae7448394f7c07fbcb6 # hardcoded the commit

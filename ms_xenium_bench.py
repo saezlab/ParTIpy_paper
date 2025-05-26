@@ -158,8 +158,8 @@ for celltype in celltype_labels:
     #p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
 
     ## QC plot for the number of archetypes in 2D
-    pt.bootstrap_aa(adata=adata, n_bootstrap=20, n_archetypes=number_of_archetypes_dict[celltype], n_jobs=20)
-    p = pt.plot_bootstrap_2D(adata)
+    pt.bootstrap_aa(adata=adata, n_bootstrap=20, n_archetypes_list=[number_of_archetypes_dict[celltype]], n_jobs=20)
+    p = pt.plot_bootstrap_2D(adata, n_archetypes=number_of_archetypes_dict[celltype])
     p.save(figure_dir_celltype / f"aa_bootstrap_2D.png", dpi=300)
 
     ## benchmark

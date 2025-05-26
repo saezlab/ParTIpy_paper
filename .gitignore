@@ -11,3 +11,4 @@ data/*
 *.txt
 *.csv
 *.pkl
+*.h5ad

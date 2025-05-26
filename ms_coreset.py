@@ -1,6 +1,5 @@
 from pathlib import Path
 import time
-import pickle
 
 from tqdm import tqdm
 import numpy as np
@@ -11,6 +10,8 @@ from partipy.utils import align_archetypes, compute_relative_rowwise_l2_distance
 import plotnine as pn
 import matplotlib
 import matplotlib.pyplot as plt
+from statsmodels.gam.api import GLMGam, BSplines
+from statsmodels.genmod.families import Gaussian
 
 from data_utils import load_ms_data
 from const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
@@ -164,19 +165,215 @@ result_df.to_csv(output_dir / "results.csv", index=False)
 ## plot for the results
 # result_df = pd.read_csv(Path(OUTPUT_PATH) / "ms_coreset" / "results.csv")
 
-for celltype in celltype_labels:
-    result_df_ct = result_df.loc[result_df["celltype"]==celltype, :].copy()
+ncols = 4
+n_celltypes = result_df["celltype"].nunique()
+nrows = int(np.ceil(n_celltypes / ncols))
 
-    p = (pn.ggplot(result_df_ct)
-        + pn.geom_point(pn.aes(x="coreset_fraction", y="mean_rel_l2_distance"))
-        + pn.geom_smooth(pn.aes(x="coreset_fraction", y="mean_rel_l2_distance"))
-        + pn.scale_x_log10()
-        )
-    p.save(figure_dir / f"mean_rel_l2_distance_vs_coreset_fraction_{celltype}.png", dpi=300, verbose=False)
-    p = (pn.ggplot(result_df_ct)
-        + pn.geom_point(pn.aes(x="coreset_fraction", y="time"))
-        + pn.geom_smooth(pn.aes(x="coreset_fraction", y="time"))
-        + pn.scale_x_log10()
-        + pn.scale_y_log10()
-        )
-    p.save(figure_dir / f"time_vs_coreset_fraction_{celltype}.png", dpi=300, verbose=False)
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(20, 5*nrows))
+axes = axes.flatten()
+
+min_coresets_list = []
+
+for (celltype, df_group), ax in zip(result_df.groupby("celltype"), axes):
+
+    df_group = df_group.copy()
+    
+    n_samples = df_group["n_samples"].to_numpy()[0]
+    n_dimensions = df_group["n_dimensions"].to_numpy()[0]
+    n_archetypes = df_group["n_archetypes"].to_numpy()[0]
+
+    df_group["log10_coreset_fraction"] = np.log10(df_group["coreset_fraction"])
+    top_varexpl = df_group.loc[df_group["coreset_fraction"] == 1.0]["varexpl"].mean()
+    deviation_fraction = 0.01
+    target_varexpl = top_varexpl - (top_varexpl * deviation_fraction)
+    df_group = df_group[["log10_coreset_fraction", "varexpl"]].dropna()
+    df_group = df_group.sort_values("log10_coreset_fraction")
+
+    # extract the variables
+    x = df_group["log10_coreset_fraction"].values
+    y = df_group["varexpl"].values
+
+    # Create B-spline basis functions
+    # You can adjust the number of knots and degree as needed
+    n_splines = 7 # Number of basis functions
+    spline_basis = BSplines(x, df=n_splines, degree=2)
+
+    # Add intercept term
+    intercept = np.ones((len(x), 1))
+
+    # Fit the GAM model with intercept
+    gam_model = GLMGam(y, exog=intercept, smoother=spline_basis, family=Gaussian())
+    gam_results = gam_model.fit()
+
+    # Generate predictions for plotting
+    x_pred = np.linspace(x.min(), x.max(), 100)
+
+    # Create intercept for predictions
+    intercept_pred = np.ones((len(x_pred), 1))
+
+    # Get predictions using the model"s predict method
+    y_pred_mean = gam_results.predict(exog=intercept_pred, exog_smooth=x_pred.reshape(-1, 1))
+
+    # For confidence intervals, we"ll use a simpler approach
+    # Calculate standard errors manually or use bootstrap if needed
+    # For now, let"s create a basic confidence interval using residual std
+    residual_std = np.std(gam_results.resid_response)
+    y_pred_ci = 1.96 * residual_std  # Approximate 95% CI
+
+    # Residual analysis
+    residuals = gam_results.resid_response
+    fitted_values = gam_results.fittedvalues
+
+    # some more things
+    min_corset_size = x_pred[y_pred_mean > target_varexpl].min()
+    min_varexpl = y_pred_mean[y_pred_mean > target_varexpl].min()
+
+    min_coresets_list.append({
+        "celltype": celltype,
+        "log10_coreset_size": min_corset_size,
+        "coreset_size": 10**min_corset_size,
+        "varexpl": min_varexpl,
+    })
+
+    # Plot the results
+    ax.vlines(x=0, 
+              ymin=top_varexpl-(top_varexpl * deviation_fraction), 
+              ymax=top_varexpl+(top_varexpl * deviation_fraction),
+              color="black")
+    ax.scatter(x, y, alpha=0.5, label="Data points")
+    ax.plot(x_pred, y_pred_mean, "r-", linewidth=2, label="GAM fit")
+    ax.fill_between(x_pred, y_pred_mean - y_pred_ci, y_pred_mean + y_pred_ci, 
+                        alpha=0.3, color="red", label="Approx 95% CI")
+    ax.axvline(min_corset_size, color="green")
+    ax.axhline(min_varexpl, color="green")
+    ax.set_title(f"{celltype} | {n_samples} | min corset fraction: {10**min_corset_size:.2f}")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+fig.savefig(figure_dir / f"varexpl_vs_coreset_fraction_gam.png")
+plt.close()
+
+min_corset_df = pd.DataFrame(min_coresets_list)
+min_corset_df.to_csv(output_dir / "min_coresets.csv", index=False)
+
+ncols = 4
+n_celltypes = result_df["celltype"].nunique()
+nrows = int(np.ceil(n_celltypes / ncols))
+
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(20, 5*nrows))
+axes = axes.flatten()
+
+time_savings_list = []
+
+for (celltype, df_group), ax in zip(result_df.groupby("celltype"), axes):
+
+    df_group = df_group.copy()
+
+    n_samples = df_group["n_samples"].to_numpy()[0]
+    n_dimensions = df_group["n_dimensions"].to_numpy()[0]
+    n_archetypes = df_group["n_archetypes"].to_numpy()[0]
+
+    df_group["log10_coreset_fraction"] = np.log10(df_group["coreset_fraction"])
+    fulltime = df_group.loc[df_group["coreset_fraction"] == 1.0]["time"].mean()
+    df_group = df_group[["log10_coreset_fraction", "time"]].dropna()
+    df_group = df_group.sort_values("log10_coreset_fraction")
+
+    # extract the variables
+    x = df_group["log10_coreset_fraction"].values
+    y = df_group["time"].values
+
+    # Create B-spline basis functions
+    # You can adjust the number of knots and degree as needed
+    n_splines = 7 # Number of basis functions
+    spline_basis = BSplines(x, df=n_splines, degree=2)
+
+    # Add intercept term
+    intercept = np.ones((len(x), 1))
+
+    # Fit the GAM model with intercept
+    gam_model = GLMGam(y, exog=intercept, smoother=spline_basis, family=Gaussian())
+    gam_results = gam_model.fit()
+
+    # Generate predictions for plotting
+    x_pred = np.linspace(x.min(), x.max(), 100)
+
+    # Create intercept for predictions
+    intercept_pred = np.ones((len(x_pred), 1))
+
+    # Get predictions using the model"s predict method
+    y_pred_mean = gam_results.predict(exog=intercept_pred, exog_smooth=x_pred.reshape(-1, 1))
+
+    # For confidence intervals, we"ll use a simpler approach
+    # Calculate standard errors manually or use bootstrap if needed
+    # For now, let"s create a basic confidence interval using residual std
+    residual_std = np.std(gam_results.resid_response)
+    y_pred_ci = 1.96 * residual_std  # Approximate 95% CI
+
+    # Residual analysis
+    residuals = gam_results.resid_response
+    fitted_values = gam_results.fittedvalues
+
+    # some more things
+    min_corset_size = min_corset_df.set_index("celltype").loc[celltype]["log10_coreset_size"]
+    idx = int(np.argmin((x_pred - min_corset_size)**2))
+    min_time = y_pred_mean[idx]
+    time_saving = np.round(fulltime / min_time, 1)
+
+    time_savings_list.append({
+        "celltype": celltype,
+        "log10_corset_size": min_corset_size,
+        "coreset_size": 10**min_corset_size,
+        "coreset_time": min_time,
+        "full_time": fulltime,
+        "time_saving": time_saving,
+    })
+
+    # Plot the results
+    ax.scatter(x, y, alpha=0.5, label="Data points")
+    ax.plot(x_pred, y_pred_mean, "r-", linewidth=2, label="GAM fit")
+    ax.fill_between(x_pred, y_pred_mean - y_pred_ci, y_pred_mean + y_pred_ci, 
+                        alpha=0.3, color="red", label="Approx 95% CI")
+    ax.axvline(min_corset_size, color="green")
+    ax.axhline(min_time, color="green")
+    ax.set_title(f"{celltype} | {n_samples} | time saving: {time_saving:.1f}")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+fig.savefig(figure_dir / f"time_vs_coreset_fraction_gam.png")
+plt.close()
+
+time_savings_df = pd.DataFrame(time_savings_list)
+time_savings_df.to_csv(output_dir / "time_savings.csv", index=False)
+
+# lastly some ggplots
+p = (pn.ggplot(result_df) 
+     + pn.geom_point(pn.aes(x="coreset_fraction", y="time"))
+     + pn.geom_smooth(pn.aes(x="coreset_fraction", y="time"), method="loess")
+     + pn.geom_vline(data=min_corset_df, mapping=pn.aes(xintercept="coreset_size"))
+     + pn.facet_wrap(facets="celltype", scales="free_y", ncol=4)
+     + pn.theme(figure_size=(10, 5))
+     + pn.scale_x_log10()
+     + pn.ylim((0, None))
+     )
+p.save(figure_dir / f"time_vs_coreset_fraction.png", dpi=300, verbose=False)
+
+p = (pn.ggplot(result_df) 
+     + pn.geom_point(pn.aes(x="coreset_fraction", y="mean_rel_l2_distance"))
+     + pn.geom_smooth(pn.aes(x="coreset_fraction", y="mean_rel_l2_distance"), method="loess")
+     + pn.geom_vline(data=min_corset_df, mapping=pn.aes(xintercept="coreset_size"))
+     + pn.facet_wrap(facets="celltype", scales="free_y", ncol=4)
+     + pn.theme(figure_size=(10, 5))
+     + pn.scale_x_log10()
+     + pn.ylim((0, None))
+     )
+p.save(figure_dir / f"mean_rel_l2_distance_vs_coreset_fraction.png", dpi=300, verbose=False)
+
+p = (pn.ggplot(result_df) 
+     + pn.geom_point(pn.aes(x="coreset_fraction", y="varexpl"))
+     + pn.geom_smooth(pn.aes(x="coreset_fraction", y="varexpl"), method="loess")
+     + pn.geom_vline(data=min_corset_df, mapping=pn.aes(xintercept="coreset_size"))
+     + pn.facet_wrap(facets="celltype", scales="free_y", ncol=4)
+     + pn.theme(figure_size=(10, 5))
+     + pn.scale_x_log10()
+     )
+p.save(figure_dir / f"varexpl_vs_coreset_fraction.png", dpi=300, verbose=False)

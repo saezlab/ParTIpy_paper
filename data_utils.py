@@ -100,14 +100,12 @@ def load_ms_data(use_cache: bool = True):
                         .reset_index()
                         .query("count > 1")["gene_name"]
                         .to_list())
-    one_to_many_genes
 
     unique_gene_ids_remove = (sn_atlas_var_info.
                             loc[sn_atlas_var_info["gene_name"].isin(one_to_many_genes), :]
                             .groupby("gene_name")
                             .last()
                             .reset_index())
-    unique_gene_ids_remove
 
     sn_atlas_var_info = sn_atlas_var_info.loc[~sn_atlas_var_info["gene_ids"].isin(unique_gene_ids_remove["gene_ids"].to_list()), :]
 
@@ -202,3 +200,66 @@ def load_ms_xenium_data(use_cache=True, data_dir=Path(".") / DATA_PATH):
         print(f"Extracted H5AD file already valid: {file_path}")
 
     return sc.read_h5ad(file_path)
+
+
+def load_lupus_data(use_cache=True, data_dir=Path(".") / DATA_PATH):
+    import gc
+
+    data_dir = Path(".") / DATA_PATH
+    data_dir.mkdir(exist_ok=True)
+
+    url = "https://datasets.cellxgene.cziscience.com/4532eea4-24b7-461a-93f5-fe437ee96f0a.h5ad"
+    file_name = "4532eea4-24b7-461a-93f5-fe437ee96f0a.h5ad"
+    file_path = data_dir / file_name
+
+    # Download file if it does not already exist
+    if file_needs_download(file_path, EXPECTED_CHECKSUMS[file_name]) or not use_cache:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        
+        with open(file_path, "wb") as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+        
+        print(f"Downloaded: {file_path}")
+    else:
+        print(f"File already exists, skipping: {file_path}")
+
+    adata = sc.read_h5ad(file_path)
+    adata.obs["Status"] = adata.obs["disease_state"].map({
+        "managed": "Managed",
+        "na": "Healthy",
+        "flare": "Flare",
+        "treated": "Treated"
+    })
+    #adata = adata[adata.obs["author_cell_type"]=="ncM", :].copy() # only consider non-classical monocytes
+    #adata = adata[adata.obs["Status"] != "Treated", :].copy() # remove samples with "treated" status
+    # remove columns we don"t need
+    adata.obs.drop(columns=["mapped_reference_annotation", "cell_type_ontology_term_id", "is_primary_data", 
+                            "cell_state", "tissue_ontology_term_id", "development_stage_ontology_term_id", 
+                            "tissue", "organism", "tissue_type", "suspension_type", "organism_ontology_term_id",
+                            "assay_ontology_term_id", "suspension_enriched_cell_types", "suspension_uuid",
+                            "self_reported_ethnicity_ontology_term_id", "disease_ontology_term_id",
+                            "sex_ontology_term_id"], 
+                            inplace=True)
+    # create new index
+    adata.obs.index = [s.split("-")[0] + "-" + str(len(s.split("-"))) + "-" + str(donor_id) 
+                    for s, donor_id in zip(adata.obs.index, adata.obs["donor_id"].to_list())]
+    # remove obsm we don't need
+    del adata.obsm["X_pca"], adata.obsm["X_umap"], adata.uns
+    gc.collect()
+
+    # use the raw counts
+    adata.X = adata.raw.X
+
+    # use gene symbols instead of ensembl IDs
+    assert len(adata.var["feature_name"]) == len(adata.var["feature_name"].unique())
+    adata.var = adata.var.set_index("feature_name")
+
+    # remove lowly expressed genes
+    adata = adata[:, adata.X.sum(axis=0) >= 20].copy()
+
+    # remove processing cohort 4.0
+    adata = adata[adata.obs["Processing_Cohort"]!="4.0", :].copy() # remove processing cohort 4.0
+
+    return adata

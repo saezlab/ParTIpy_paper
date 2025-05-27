@@ -26,7 +26,7 @@ figure_dir.mkdir(exist_ok=True, parents=True)
 output_dir = Path(OUTPUT_PATH) / "ms_xenium_coreset"
 output_dir.mkdir(exist_ok=True, parents=True)
 
-## setting up different seeds to test TODO: Change this
+## setting up different seeds to test
 seed_list = SEED_DICT["m"]
 
 coreset_fraction_list = 1 / (np.array([2**n for n in range(0, 8)]) * (25/16))

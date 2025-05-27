@@ -87,7 +87,7 @@ celltype_labels = ["Oligo", "Astrocyte", "Myeloid", "Vascular", "Schwann", "OPC"
 print(atlas_adata.obs.value_counts(celltype_column))
 
 ## number of archetypes per celltype
-archetypes_to_test = list(range(2, 15))
+archetypes_to_test = list(range(2, 12))
 number_of_archetypes_dict = {
     "Oligo": 4,
     "Astrocyte": 4,
@@ -152,13 +152,12 @@ for celltype in celltype_labels:
     p = pt.plot_IC(adata)
     p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
 
-    #print("Running the boostrap...")
-    #pt.bootstrap_aa_multiple_k(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=10)
-    #p = pt.plot_bootstrap_multiple_k(adata)
-    #p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
+    print("Running the boostrap...")
+    pt.bootstrap_aa(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=20, coreset_fraction=0.10, n_jobs=20)
+    p = pt.plot_bootstrap_variance(adata)
+    p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
 
     ## QC plot for the number of archetypes in 2D
-    pt.bootstrap_aa(adata=adata, n_bootstrap=20, n_archetypes_list=[number_of_archetypes_dict[celltype]], n_jobs=20)
     p = pt.plot_bootstrap_2D(adata, n_archetypes=number_of_archetypes_dict[celltype])
     p.save(figure_dir_celltype / f"aa_bootstrap_2D.png", dpi=300)
 

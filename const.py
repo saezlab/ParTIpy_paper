@@ -7,6 +7,7 @@ EXPECTED_CHECKSUMS = {
     "GSE279183_RAW.tar": "fdc14ad0232c0e0a95d79082815b1603c927032ebb732ad8398e8ecba0c041ff",
     "MS_xenium_data_v5_with_images_tmap.h5ad.zip": "b0cee1c08bde491702cfc4de9739d1473a26f346ccd85002f6525d9399b05dd9",
     "MS_xenium_data_v5_with_images_tmap.h5ad": "0f6a9cca8f26b76e8613976b804492f4a5a462f4c972e7587691f51d49f92381",
+    "4532eea4-24b7-461a-93f5-fe437ee96f0a.h5ad": "1f4ab365035ffb370807a4dd7eebae92562efd87a9ee52d52afaf619d02cd0ae",
 }
 
 #import numpy as np

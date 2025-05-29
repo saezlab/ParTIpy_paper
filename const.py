@@ -8,6 +8,10 @@ EXPECTED_CHECKSUMS = {
     "MS_xenium_data_v5_with_images_tmap.h5ad.zip": "b0cee1c08bde491702cfc4de9739d1473a26f346ccd85002f6525d9399b05dd9",
     "MS_xenium_data_v5_with_images_tmap.h5ad": "0f6a9cca8f26b76e8613976b804492f4a5a462f4c972e7587691f51d49f92381",
     "4532eea4-24b7-461a-93f5-fe437ee96f0a.h5ad": "1f4ab365035ffb370807a4dd7eebae92562efd87a9ee52d52afaf619d02cd0ae",
+    "hepatocyte_meta.txt": "55aa992aa0473e3ee5598e6da18902d7a11e084f0cd3520668af61469c9067b1",
+    "hepatocyte_counts.txt": "20e50fbb9cc81d1a724f437ae6d335518cf6422d4fc0e667386c7a51837f1147",
+    "GSE84498%5Fexperimental%5Fdesign.txt.gz": "ca94fce31b850e5fdbf896abd6e9605548f2ac919cca5dc9e0309feeed597ee9",
+    "GSE84498%5Fumitab.txt.gz": "3787f1ad635afed6a4169757b71c8c45b7eaa54c69ae2c88ba9d972507b953d8",
 }
 
 #import numpy as np
@@ -15,7 +19,8 @@ EXPECTED_CHECKSUMS = {
 #seed_list = rng.integers(low=0, high=2**32 - 1, size=40).tolist()
 #assert len(seed_list) == len(np.unique(seed_list))
 SEED_DICT = {
-    "s": [383329927, 3324115916],
+    "xs": [383329927, 3324115916],
+    "s": [383329927, 3324115916, 2811363264, 1884968544, 1859786275],
     "m": [383329927, 3324115916, 2811363264, 1884968544, 1859786275, 
           3687649985, 369133708, 2995172877, 865305066, 404488628,
           2261209995, 4190266092, 3160032368, 3269070126, 3081541439, 

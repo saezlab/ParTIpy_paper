@@ -112,72 +112,22 @@ for celltype in celltype_labels:
     pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=number_of_pcs_dict[celltype])
 
     ## check for the number of archetypes
-    pt.var_explained_aa(adata=adata, min_a=archetypes_to_test[0], max_a=archetypes_to_test[-1], coreset_fraction=0.05, n_jobs=20)
-
-    p = pt.plot_var_explained(adata)
-    p.save(figure_dir_celltype / f"aa_var_explained.png", dpi=300)
-
-    p = pt.plot_IC(adata)
-    p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
-
-    print("Running the boostrap...")
-    pt.bootstrap_aa(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=20, coreset_fraction=0.05, n_jobs=20)
-    p = pt.plot_bootstrap_variance(adata)
-    p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
-
-    ## QC plot for the number of archetypes in 2D
-    p = pt.plot_bootstrap_2D(adata, n_archetypes=number_of_archetypes_dict[celltype])
-    p.save(figure_dir_celltype / f"aa_bootstrap_2D.png", dpi=300)
-
-## initialize list to save the benchmarking results
-result_list = []
-rss_trace_dict = {}
-
-for celltype in celltype_labels:
-
-    rss_trace_dict[celltype] = {}
-
-    ## set up plotting directory per celltype
-    figure_dir_celltype = figure_dir / celltype
-    figure_dir_celltype.mkdir(exist_ok=True)
-
-    ## subsetting and preprocessing per celltype
-    ## NOTE: For Xenium data we do not need to select highly variable genes before PCA
-    adata = atlas_adata[atlas_adata.obs[celltype_column]==celltype, :].copy()
-    print("\n#####\n->", celltype, "\n", adata)
-    sc.pp.normalize_total(adata)
-    sc.pp.log1p(adata)
-    sc.pp.pca(adata)
-
-    ## some scanpy QC plots
-    for qc_var in qc_columns:
-        adata.obs[qc_var] = pd.Categorical(adata.obs[qc_var])
-    sc.pl.pca_variance_ratio(adata, n_pcs=50, log=False, show=False, save=False)
-    plt.savefig(figure_dir_celltype / "pca_var_explained.png")
-    sc.pl.pca(adata, color=qc_columns, dimensions=[(0, 1), (0, 1)],
-              ncols=2, size=8, alpha=0.50, show=False, save=False)
-    plt.savefig(figure_dir_celltype / "pca_2D.png")
-
-    ## for simplicity we will always use 10 principal components
-    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=number_of_pcs_dict[celltype])
-
-    ## check for the number of archetypes
-    pt.var_explained_aa(adata=adata, min_a=archetypes_to_test[0], max_a=archetypes_to_test[-1], n_jobs=20)
-
-    p = pt.plot_var_explained(adata)
-    p.save(figure_dir_celltype / f"aa_var_explained.png", dpi=300)
-
-    p = pt.plot_IC(adata)
-    p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
-
-    print("Running the boostrap...")
-    pt.bootstrap_aa(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=20, coreset_fraction=0.10, n_jobs=20)
-    p = pt.plot_bootstrap_variance(adata)
-    p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
-
-    ## QC plot for the number of archetypes in 2D
-    p = pt.plot_bootstrap_2D(adata, n_archetypes=number_of_archetypes_dict[celltype])
-    p.save(figure_dir_celltype / f"aa_bootstrap_2D.png", dpi=300)
+    #pt.compute_selection_metrics(adata=adata, min_k=archetypes_to_test[0], max_k=archetypes_to_test[-1], n_jobs=20)
+#
+    #p = pt.plot_var_explained(adata)
+    #p.save(figure_dir_celltype / f"aa_var_explained.png", dpi=300)
+#
+    #p = pt.plot_IC(adata)
+    #p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
+#
+    #print("Running the boostrap...")
+    #pt.compute_bootstrap_variance(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=20, coreset_fraction=0.10, n_jobs=20)
+    #p = pt.plot_bootstrap_variance(adata)
+    #p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
+#
+    ### QC plot for the number of archetypes in 2D
+    #p = pt.plot_bootstrap_2D(adata, n_archetypes=number_of_archetypes_dict[celltype])
+    #p.save(figure_dir_celltype / f"aa_bootstrap_2D.png", dpi=300)
 
     ## benchmark
     print("Running the benchmark...")
@@ -195,6 +145,7 @@ for celltype in celltype_labels:
             
             pt.compute_archetypes(adata_bench, 
                                   n_archetypes=number_of_archetypes_dict[celltype],
+                                  n_restarts=1,
                                   init=optim_dict["init_alg"],
                                   optim=optim_dict["optim_alg"],
                                   weight=None,

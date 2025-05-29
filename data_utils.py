@@ -167,6 +167,49 @@ def load_hepatocyte_data(use_cache: bool = True):
     return adata
 
 
+def load_hepatocyte_data_2(use_cache=True, data_dir=Path(".") / DATA_PATH):
+    data_dir = Path(".") / DATA_PATH
+    data_dir.mkdir(exist_ok=True)
+
+    file_dicts = {
+        "metadata": {
+            "filename": "hepatocyte_meta.txt",
+            "url": "https://zenodo.org/records/6035873/files/Single_cell_Meta_data.txt?download=1",
+        },
+        "counts": {
+            "filename": "hepatocyte_counts.txt",
+            "url": "https://zenodo.org/records/6035873/files/Single_cell_UMI_COUNT.txt?download=1",
+        }
+    }
+
+    for file_dict in file_dicts.values():
+
+        filepath = data_dir / file_dict["filename"]
+        url = file_dict["url"]
+
+        if use_cache and filepath.exists():
+            print(f"File already exists, skipping: {filepath}")
+        else:
+            print(f"Downloading {url} to {filepath}...")
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+            with open(filepath, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            print(f"Downloaded: {filepath}")
+    count_tmp = pd.read_csv(data_dir / file_dicts["counts"]["filename"]).set_index("Gene_Name")
+    meta_tmp = pd.read_csv(data_dir / file_dicts["metadata"]["filename"])
+    meta_tmp = (meta_tmp.loc[meta_tmp["Cell_barcode"].isin(count_tmp.columns.to_list())]
+                .set_index("Cell_barcode"))
+    adata = sc.AnnData(X=count_tmp.values.copy().T.astype(np.float32),
+                    var=pd.DataFrame(index=count_tmp.index.copy()),
+                    obs=meta_tmp.loc[count_tmp.columns.to_numpy(), :].copy())
+    del count_tmp, meta_tmp
+    adata = adata[(adata.obs["time_point"] == 0) & (adata.obs["cell_type"] == "Hep"), :].copy()
+    adata = adata[:, adata.X.sum(axis=0) > 0].copy()
+    return adata
+
+
 def load_ms_xenium_data(use_cache=True, data_dir=Path(".") / DATA_PATH):
     data_dir = Path(".") / DATA_PATH
     data_dir.mkdir(exist_ok=True)

@@ -84,7 +84,7 @@ number_of_archetypes_dict = {
     "Oligo": 4,
     "Astrocyte": 4,
     "Myeloid": 5,
-    "Vascular": 5,
+    "Vascular": 4,
     "Schwann": 4,
     "OPC": 5,
     "Endothelial": 3,
@@ -161,6 +161,7 @@ for celltype in celltype_labels:
             
             pt.compute_archetypes(adata_bench, 
                                   n_archetypes=number_of_archetypes_dict[celltype],
+                                  n_restarts=1,
                                   use_coreset=True if coreset_fraction < 1 else False,
                                   coreset_fraction=coreset_fraction,
                                   seed=seed,

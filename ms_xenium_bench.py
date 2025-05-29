@@ -92,7 +92,7 @@ number_of_archetypes_dict = {
     "Oligo": 4,
     "Astrocyte": 4,
     "Myeloid": 5,
-    "Vascular": 5,
+    "Vascular": 4,
     "Schwann": 4,
     "OPC": 5,
     "Endothelial": 3,
@@ -144,7 +144,7 @@ for celltype in celltype_labels:
     pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=number_of_pcs_dict[celltype])
 
     ## check for the number of archetypes
-    pt.var_explained_aa(adata=adata, min_a=archetypes_to_test[0], max_a=archetypes_to_test[-1], n_jobs=20)
+    pt.compute_selection_metrics(adata=adata, min_k=archetypes_to_test[0], max_k=archetypes_to_test[-1], n_jobs=20)
 
     p = pt.plot_var_explained(adata)
     p.save(figure_dir_celltype / f"aa_var_explained.png", dpi=300)
@@ -153,7 +153,7 @@ for celltype in celltype_labels:
     p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
 
     print("Running the boostrap...")
-    pt.bootstrap_aa(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=20, coreset_fraction=0.10, n_jobs=20)
+    pt.compute_bootstrap_variance(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=20, coreset_fraction=0.10, n_jobs=20)
     p = pt.plot_bootstrap_variance(adata)
     p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
 
@@ -177,6 +177,7 @@ for celltype in celltype_labels:
             
             pt.compute_archetypes(adata_bench, 
                                   n_archetypes=number_of_archetypes_dict[celltype],
+                                  n_restarts=1,
                                   init=optim_dict["init_alg"],
                                   optim=optim_dict["optim_alg"],
                                   weight=None,

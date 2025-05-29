@@ -128,6 +128,7 @@ for celltype in celltype_labels:
             
             pt.compute_archetypes(adata_bench, 
                                   n_archetypes=number_of_archetypes_dict[celltype],
+                                  n_restarts=1,
                                   use_coreset=True if coreset_fraction < 1 else False,
                                   coreset_fraction=coreset_fraction,
                                   seed=seed,

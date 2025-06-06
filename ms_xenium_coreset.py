@@ -135,7 +135,7 @@ for celltype in celltype_labels:
     plt.savefig(figure_dir_celltype / "pca_2D.png")
 
     ## for simplicity we will always use 10 principal components
-    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=number_of_pcs_dict[celltype])
+    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=number_of_pcs_dict[celltype])
 
     # reference archetype
     adata_ref = adata.copy()

@@ -90,11 +90,14 @@ for celltype in celltype_labels:
     print("\n#####\n->", celltype, "\n", adata)
     sc.pp.normalize_total(adata)
     sc.pp.log1p(adata)
-    sc.pp.pca(adata)
+    sc.pp.highly_variable_genes(adata)
+    sc.pp.pca(adata, mask_var="highly_variable")
 
     ## some scanpy QC plots
     for qc_var in qc_columns:
         adata.obs[qc_var] = pd.Categorical(adata.obs[qc_var])
+    sc.pl.highly_variable_genes(adata, log=False, show=False, save=False)
+    plt.savefig(figure_dir_celltype / "highly_variable_genes.png")
     sc.pl.pca_variance_ratio(adata, n_pcs=50, log=False, show=False, save=False)
     plt.savefig(figure_dir_celltype / "pca_var_explained.png")
     sc.pl.pca(adata, color=qc_columns, dimensions=[(0, 1), (0, 1)],
@@ -102,7 +105,7 @@ for celltype in celltype_labels:
     plt.savefig(figure_dir_celltype / "pca_2D.png")
 
     ## for simplicity we will always use 10 principal components
-    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=number_of_pcs_dict[celltype])
+    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=number_of_pcs_dict[celltype])
 
     # reference archetype
     adata_ref = adata.copy()

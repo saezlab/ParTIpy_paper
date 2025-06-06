@@ -46,10 +46,10 @@ p = (pn.ggplot(data_df)
      + pn.theme(text=pn.element_blank()))
 p.save(figure_dir / "pca_2D.pdf")
 
-pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=N_DIMENSION)
+pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=N_DIMENSION)
 
-pt.compute_selection_metrics(adata)
-pt.compute_bootstrap_variance(adata, n_bootstrap=20)
+pt.compute_selection_metrics(adata, min_k=2, max_k=10)
+pt.compute_bootstrap_variance(adata, n_bootstrap=20, n_archetypes_list=list(range(2, 11)))
 
 pt.compute_archetypes(adata, n_archetypes=N_ARCHETYPES, verbose=True, archetypes_only=False)
 
@@ -73,8 +73,9 @@ p.save(figure_dir / "IC.pdf")
 
 p = (pt.plot_bootstrap_variance(adata) 
      + pn.theme_minimal() 
-     + pn.theme(figure_size=(6, 3))
+     + pn.theme(figure_size=(6, 3), legend_position="none")
      )
+p.save(figure_dir / "boostrap_variance.pdf")
 
 
 pt.compute_archetype_weights(adata=adata, mode="automatic")
@@ -99,3 +100,6 @@ p.save(figure_dir / "archetype_2D_with_condition.pdf")
 metaenrichment_df = pt.compute_meta_enrichment(adata=adata, meta_col="condition")
 fig = pt.radarplot_meta_enrichment(metaenrichment_df, color_map=color_map)
 fig.savefig(figure_dir / "radarplot_condition.pdf")
+
+p = pt.barplot_meta_enrichment(metaenrichment_df, color_map=color_map)
+p.save(figure_dir / "barplot_condition.pdf")

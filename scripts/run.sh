@@ -56,14 +56,14 @@ fi
 mamba activate partipy
 
 ## run python scripts
-echo "python simulated_data.py"
-python simulated_data.py
-
-echo "python ms_bench.py"
-python ms_bench.py
-
-echo "python ms_xenium_bench.py"
-python ms_xenium_bench.py
+#echo "python simulated_data.py"
+#python simulated_data.py
+#
+#echo "python ms_bench.py"
+#python ms_bench.py
+#
+#echo "python ms_xenium_bench.py"
+#python ms_xenium_bench.py
 
 echo "python lupus_bench.py"
 python lupus_bench.py

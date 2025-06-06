@@ -97,28 +97,36 @@ for celltype in celltype_labels:
     print("\n#####\n->", celltype, "\n", adata)
     sc.pp.normalize_total(adata)
     sc.pp.log1p(adata)
-    sc.pp.pca(adata)
+    sc.pp.highly_variable_genes(adata)
+    sc.pp.pca(adata, mask_var="highly_variable")
 
     ## some scanpy QC plots
     for qc_var in qc_columns:
         adata.obs[qc_var] = pd.Categorical(adata.obs[qc_var])
+    sc.pl.highly_variable_genes(adata, log=False, show=False, save=False)
+    plt.savefig(figure_dir_celltype / "highly_variable_genes.png")
     sc.pl.pca_variance_ratio(adata, n_pcs=50, log=False, show=False, save=False)
     plt.savefig(figure_dir_celltype / "pca_var_explained.png")
     sc.pl.pca(adata, color=qc_columns, dimensions=[(0, 1), (0, 1)],
               ncols=2, size=8, alpha=0.50, show=False, save=False)
     plt.savefig(figure_dir_celltype / "pca_2D.png")
 
-    ## for simplicity we will always use 10 principal components
-    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=number_of_pcs_dict[celltype])
+    ## QC plots for number of PCs
+    pt.compute_shuffled_pca(adata, mask_var="highly_variable")
+    p = pt.plot_shuffled_pca(adata)
+    p.save(figure_dir_celltype / f"shuffled_pca_plot.png", dpi=300)
 
-    ## check for the number of archetypes
-    #pt.compute_selection_metrics(adata=adata, min_k=archetypes_to_test[0], max_k=archetypes_to_test[-1], n_jobs=20)
-#
-    #p = pt.plot_var_explained(adata)
-    #p.save(figure_dir_celltype / f"aa_var_explained.png", dpi=300)
-#
-    #p = pt.plot_IC(adata)
-    #p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
+    ## for simplicity we will always use 10 principal components
+    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=number_of_pcs_dict[celltype])
+
+    # check for the number of archetypes
+    pt.compute_selection_metrics(adata=adata, min_k=archetypes_to_test[0], max_k=archetypes_to_test[-1], n_jobs=20)
+
+    p = pt.plot_var_explained(adata)
+    p.save(figure_dir_celltype / f"aa_var_explained.png", dpi=300)
+
+    p = pt.plot_IC(adata)
+    p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
 #
     #print("Running the boostrap...")
     #pt.compute_bootstrap_variance(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=20, coreset_fraction=0.10, n_jobs=20)

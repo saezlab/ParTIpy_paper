@@ -15,7 +15,7 @@ dependencies:
   - conda-forge::plotly==6.1.1
   - pip
   - pip:
-    - decoupler==2.0.1
+    - decoupler==2.0.2
     - liana==1.5.1
     - scikit-misc==0.5.1
-    - git+https://github.com/saezlab/ParTIpy@e3855a5f5b920125a924a887b447028c3f6425e7 # hardcoded the commit
+    - git+https://github.com/saezlab/ParTIpy@c3c5eca91dd30a967271d3c25dfd853cf8f70c5e # hardcoded the commit

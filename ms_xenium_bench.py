@@ -140,8 +140,13 @@ for celltype in celltype_labels:
               ncols=2, size=8, alpha=0.50, show=False, save=False)
     plt.savefig(figure_dir_celltype / "pca_2D.png")
 
+    ## QC plots for number of PCs
+    pt.compute_shuffled_pca(adata)
+    p = pt.plot_shuffled_pca(adata)
+    p.save(figure_dir_celltype / f"shuffled_pca_plot.png", dpi=300)
+
     ## for simplicity we will always use 10 principal components
-    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimension=number_of_pcs_dict[celltype])
+    pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=number_of_pcs_dict[celltype])
 
     ## check for the number of archetypes
     pt.compute_selection_metrics(adata=adata, min_k=archetypes_to_test[0], max_k=archetypes_to_test[-1], n_jobs=20)

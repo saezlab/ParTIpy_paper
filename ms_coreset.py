@@ -108,7 +108,6 @@ for celltype in celltype_labels:
     adata_ref = adata.copy()
     pt.compute_archetypes(adata_ref, 
                           n_archetypes=number_of_archetypes_dict[celltype],
-                          use_coreset=False,
                           seed=42,
                           save_to_anndata=True,
                           archetypes_only=False,
@@ -129,7 +128,7 @@ for celltype in celltype_labels:
             pt.compute_archetypes(adata_bench, 
                                   n_archetypes=number_of_archetypes_dict[celltype],
                                   n_restarts=1,
-                                  use_coreset=True if coreset_fraction < 1 else False,
+                                  coreset_algorithm="standard" if coreset_fraction < 1 else None,
                                   coreset_fraction=coreset_fraction,
                                   seed=seed,
                                   save_to_anndata=True,

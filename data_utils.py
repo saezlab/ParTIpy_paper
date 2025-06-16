@@ -39,8 +39,7 @@ def file_needs_download(file_path: Path, expected_hash: str) -> bool:
     return False
 
 
-def load_ms_data(use_cache: bool = True):
-    data_dir = Path(".") / DATA_PATH
+def load_ms_data(use_cache: bool = True, data_dir=Path(".") / DATA_PATH):
     data_dir.mkdir(exist_ok=True)
 
     # File URL to download

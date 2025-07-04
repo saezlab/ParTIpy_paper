@@ -65,7 +65,7 @@ number_of_pcs_dict = {
     "cM": 10,
     "T8": 10,
     "B": 10,
-    "NK": 10,
+    "NK": 6,
     "ncM": 10,
     "cDC": 10,
     "pDC": 10,

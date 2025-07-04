@@ -61,7 +61,7 @@ number_of_archetypes_dict = {
     "cM": 5,
     "T8": 4,
     "B": 4,
-    "NK": 4,
+    "NK": 6,
     "ncM": 4,
     "cDC": 5,
     "pDC": 4,

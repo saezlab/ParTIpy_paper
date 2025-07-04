@@ -18,4 +18,4 @@ dependencies:
     - decoupler==2.0.2
     - liana==1.5.1
     - scikit-misc==0.5.1
-    - git+https://github.com/saezlab/ParTIpy@b432f87a195064294a0ee96d9a102fb037c07bd5#egg=partipy[extra] # hardcoded the commit, install extra dependencies
+    - git+https://github.com/saezlab/ParTIpy@fd95cfbfad85b61af8e527a27caa6107d95491c9#egg=partipy[extra] # hardcoded the commit, install extra dependencies

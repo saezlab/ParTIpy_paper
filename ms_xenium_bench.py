@@ -58,8 +58,8 @@ mapping_dict = {
     "vascular_MP_1":"Myeloid",
     "vascular_MP_2": "Myeloid",
     "vascular_MP_3": "Myeloid",
-    "Vascular_1": "Vascular",
-    "Vascular_2": "Vascular",
+    #"Vascular_1": "Endothelial",
+    #"Vascular_2": "Endothelial",
     "Astro_WM": "Astrocyte",
     "Astro_GM": "Astrocyte",
     "Astro_WM_DA": "Astrocyte",
@@ -83,27 +83,25 @@ mapping_dict = {
 atlas_adata.obs["celltype"] = atlas_adata.obs["Level2"].map(mapping_dict)
 
 celltype_column = "celltype"
-celltype_labels = ["Oligo", "Astrocyte", "Myeloid", "Vascular", "Schwann", "OPC", "Endothelial", "T_cell"]
+celltype_labels = ["Oligo", "Astrocyte", "Myeloid", "Schwann", "OPC", "Endothelial", "T_cell"]
 print(atlas_adata.obs.value_counts(celltype_column))
 
 ## number of archetypes per celltype
-archetypes_to_test = list(range(2, 12))
+archetypes_to_test = list(range(2, 10))
 number_of_archetypes_dict = {
     "Oligo": 4,
     "Astrocyte": 4,
     "Myeloid": 5,
-    "Vascular": 4,
     "Schwann": 4,
     "OPC": 5,
     "Endothelial": 3,
-    "T_cell": 4,
+    "T_cell": 3,
 }
 assert set(celltype_labels) == set(number_of_archetypes_dict.keys())
 number_of_pcs_dict = {
     "Oligo": 10,
     "Astrocyte": 10,
     "Myeloid": 10,
-    "Vascular": 10,
     "Schwann": 10,
     "OPC": 10,
     "Endothelial": 10,
@@ -143,7 +141,7 @@ for celltype in celltype_labels:
     ## QC plots for number of PCs
     pt.compute_shuffled_pca(adata)
     p = pt.plot_shuffled_pca(adata)
-    p.save(figure_dir_celltype / f"shuffled_pca_plot.png", dpi=300)
+    p.save(figure_dir_celltype / "shuffled_pca_plot.png", dpi=300)
 
     ## for simplicity we will always use 10 principal components
     pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=number_of_pcs_dict[celltype])
@@ -152,19 +150,19 @@ for celltype in celltype_labels:
     pt.compute_selection_metrics(adata=adata, min_k=archetypes_to_test[0], max_k=archetypes_to_test[-1], n_jobs=20)
 
     p = pt.plot_var_explained(adata)
-    p.save(figure_dir_celltype / f"aa_var_explained.png", dpi=300)
+    p.save(figure_dir_celltype / "aa_var_explained.png", dpi=300)
 
     p = pt.plot_IC(adata)
-    p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
+    p.save(figure_dir_celltype / "aa_IC.png", dpi=300)
 
     print("Running the boostrap...")
     pt.compute_bootstrap_variance(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=20, coreset_fraction=0.10, n_jobs=20)
     p = pt.plot_bootstrap_variance(adata)
-    p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
+    p.save(figure_dir_celltype / "plot_bootstrap_multiple_k.png", dpi=300)
 
     ## QC plot for the number of archetypes in 2D
     p = pt.plot_bootstrap_2D(adata, n_archetypes=number_of_archetypes_dict[celltype])
-    p.save(figure_dir_celltype / f"aa_bootstrap_2D.png", dpi=300)
+    p.save(figure_dir_celltype / "aa_bootstrap_2D.png", dpi=300)
 
     ## benchmark
     print("Running the benchmark...")
@@ -252,7 +250,7 @@ p = (
     + pn.theme(figure_size=(12, 6)) 
     + pn.scale_color_manual(values={"projected_gradients": "green", "frank_wolfe": "blue"})
 )
-p.save(figure_dir / f"rss_vs_time.png", dpi=300)
+p.save(figure_dir / "rss_vs_time.png", dpi=300)
 
 p = (
     pn.ggplot(agg_df)
@@ -268,7 +266,7 @@ p = (
     + pn.theme(figure_size=(12, 6)) 
     + pn.scale_color_manual(values={"projected_gradients": "green", "frank_wolfe": "blue"})
 )
-p.save(figure_dir / f"normalized_rss_vs_time.png", dpi=300)
+p.save(figure_dir / "normalized_rss_vs_time.png", dpi=300)
 
 
 ## plot for the optimization traces

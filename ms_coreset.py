@@ -50,13 +50,13 @@ celltype_labels = ["MG", "AS", "OL", "OPC", "NEU", "EC"]
 print(atlas_adata.obs.value_counts(celltype_column))
 
 ## number of archetypes per celltype
-archetypes_to_test = list(range(2, 15))
+archetypes_to_test = list(range(2, 10))
 number_of_archetypes_dict = {
-    "MG": 5,
-    "AS": 6,
+    "MG": 6,
+    "AS": 5,
     "OL": 5,
-    "OPC": 5,
-    "NEU": 9,
+    "OPC": 4,
+    "NEU": 6,
     "EC": 4,
 }
 assert set(celltype_labels) == set(number_of_archetypes_dict.keys())
@@ -250,7 +250,7 @@ for (celltype, df_group), ax in zip(result_df.groupby("celltype"), axes):
     ax.legend()
     ax.grid(True, alpha=0.3)
 
-fig.savefig(figure_dir / f"varexpl_vs_coreset_fraction_gam.png")
+fig.savefig(figure_dir / "varexpl_vs_coreset_fraction_gam.png")
 plt.close()
 
 min_corset_df = pd.DataFrame(min_coresets_list)
@@ -339,7 +339,7 @@ for (celltype, df_group), ax in zip(result_df.groupby("celltype"), axes):
     ax.legend()
     ax.grid(True, alpha=0.3)
 
-fig.savefig(figure_dir / f"time_vs_coreset_fraction_gam.png")
+fig.savefig(figure_dir / "time_vs_coreset_fraction_gam.png")
 plt.close()
 
 time_savings_df = pd.DataFrame(time_savings_list)
@@ -355,7 +355,7 @@ p = (pn.ggplot(result_df)
      + pn.scale_x_log10()
      + pn.ylim((0, None))
      )
-p.save(figure_dir / f"time_vs_coreset_fraction.png", dpi=300, verbose=False)
+p.save(figure_dir / "time_vs_coreset_fraction.png", dpi=300, verbose=False)
 
 p = (pn.ggplot(result_df) 
      + pn.geom_point(pn.aes(x="coreset_fraction", y="mean_rel_l2_distance"))
@@ -366,7 +366,7 @@ p = (pn.ggplot(result_df)
      + pn.scale_x_log10()
      + pn.ylim((0, None))
      )
-p.save(figure_dir / f"mean_rel_l2_distance_vs_coreset_fraction.png", dpi=300, verbose=False)
+p.save(figure_dir / "mean_rel_l2_distance_vs_coreset_fraction.png", dpi=300, verbose=False)
 
 p = (pn.ggplot(result_df) 
      + pn.geom_point(pn.aes(x="coreset_fraction", y="varexpl"))
@@ -376,4 +376,4 @@ p = (pn.ggplot(result_df)
      + pn.theme(figure_size=(10, 5))
      + pn.scale_x_log10()
      )
-p.save(figure_dir / f"varexpl_vs_coreset_fraction.png", dpi=300, verbose=False)
+p.save(figure_dir / "varexpl_vs_coreset_fraction.png", dpi=300, verbose=False)

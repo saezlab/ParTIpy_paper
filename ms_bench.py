@@ -57,13 +57,13 @@ celltype_labels = ["MG", "AS", "OL", "OPC", "NEU", "EC"]
 print(atlas_adata.obs.value_counts(celltype_column))
 
 ## number of archetypes per celltype
-archetypes_to_test = list(range(2, 15))
+archetypes_to_test = list(range(2, 10))
 number_of_archetypes_dict = {
     "MG": 6,
-    "AS": 11,
+    "AS": 5,
     "OL": 5,
-    "OPC": 5,
-    "NEU": 9,
+    "OPC": 4,
+    "NEU": 6,
     "EC": 4,
 }
 assert set(celltype_labels) == set(number_of_archetypes_dict.keys())
@@ -111,7 +111,7 @@ for celltype in celltype_labels:
     ## QC plots for number of PCs
     pt.compute_shuffled_pca(adata, mask_var="highly_variable")
     p = pt.plot_shuffled_pca(adata)
-    p.save(figure_dir_celltype / f"shuffled_pca_plot.png", dpi=300)
+    p.save(figure_dir_celltype / "shuffled_pca_plot.png", dpi=300)
 
     ## for simplicity we will always use 10 principal components
     pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=number_of_pcs_dict[celltype])
@@ -120,19 +120,19 @@ for celltype in celltype_labels:
     pt.compute_selection_metrics(adata=adata, min_k=archetypes_to_test[0], max_k=archetypes_to_test[-1], n_jobs=20)
 
     p = pt.plot_var_explained(adata)
-    p.save(figure_dir_celltype / f"aa_var_explained.png", dpi=300)
+    p.save(figure_dir_celltype / "aa_var_explained.png", dpi=300)
 
     p = pt.plot_IC(adata)
-    p.save(figure_dir_celltype / f"aa_IC.png", dpi=300)
+    p.save(figure_dir_celltype / "aa_IC.png", dpi=300)
 
     print("Running the boostrap...")
     pt.compute_bootstrap_variance(adata=adata, n_archetypes_list=archetypes_to_test, n_bootstrap=10)
     p = pt.plot_bootstrap_variance(adata)
-    p.save(figure_dir_celltype / f"plot_bootstrap_multiple_k.png", dpi=300)
+    p.save(figure_dir_celltype / "plot_bootstrap_multiple_k.png", dpi=300)
 
     ## QC plot for the number of archetypes in 2D
     p = pt.plot_bootstrap_2D(adata, n_archetypes=number_of_archetypes_dict[celltype])
-    p.save(figure_dir_celltype / f"aa_bootstrap_2D.png", dpi=300)
+    p.save(figure_dir_celltype / "aa_bootstrap_2D.png", dpi=300)
 
     ## benchmark
     print("Running the benchmark...")
@@ -220,7 +220,7 @@ p = (
     + pn.theme(figure_size=(12, 6)) 
     + pn.scale_color_manual(values={"projected_gradients": "green", "frank_wolfe": "blue"})
 )
-p.save(figure_dir / f"rss_vs_time.png", dpi=300)
+p.save(figure_dir / "rss_vs_time.png", dpi=300)
 
 p = (
     pn.ggplot(agg_df)
@@ -236,7 +236,7 @@ p = (
     + pn.theme(figure_size=(12, 6)) 
     + pn.scale_color_manual(values={"projected_gradients": "green", "frank_wolfe": "blue"})
 )
-p.save(figure_dir / f"normalized_rss_vs_time.png", dpi=300)
+p.save(figure_dir / "normalized_rss_vs_time.png", dpi=300)
 
 ## plot for the optimization traces
 #with open(Path(OUTPUT_PATH) / "ms_bench" / "rss_trace_dict.pkl", "rb") as f:

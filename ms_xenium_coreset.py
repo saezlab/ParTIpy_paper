@@ -44,14 +44,15 @@ print(atlas_adata)
 qc_columns = ["type_spec", "Level3"]
 
 ## remap the cell type annotation to broader categories
+## remap the cell type annotation to broader categories
 mapping_dict = {
     "MP/MiGl_1": "Myeloid",
     "MP/MiGl_2": "Myeloid",
     "vascular_MP_1":"Myeloid",
     "vascular_MP_2": "Myeloid",
     "vascular_MP_3": "Myeloid",
-    "Vascular_1": "Vascular",
-    "Vascular_2": "Vascular",
+    #"Vascular_1": "Endothelial",
+    #"Vascular_2": "Endothelial",
     "Astro_WM": "Astrocyte",
     "Astro_GM": "Astrocyte",
     "Astro_WM_DA": "Astrocyte",
@@ -75,27 +76,25 @@ mapping_dict = {
 atlas_adata.obs["celltype"] = atlas_adata.obs["Level2"].map(mapping_dict)
 
 celltype_column = "celltype"
-celltype_labels = ["Oligo", "Astrocyte", "Myeloid", "Vascular", "Schwann", "OPC", "Endothelial", "T_cell"]
+celltype_labels = ["Oligo", "Astrocyte", "Myeloid", "Schwann", "OPC", "Endothelial", "T_cell"]
 print(atlas_adata.obs.value_counts(celltype_column))
 
 ## number of archetypes per celltype
-archetypes_to_test = list(range(2, 15))
+archetypes_to_test = list(range(2, 10))
 number_of_archetypes_dict = {
     "Oligo": 4,
     "Astrocyte": 4,
     "Myeloid": 5,
-    "Vascular": 4,
     "Schwann": 4,
     "OPC": 5,
     "Endothelial": 3,
-    "T_cell": 4,
+    "T_cell": 3,
 }
 assert set(celltype_labels) == set(number_of_archetypes_dict.keys())
 number_of_pcs_dict = {
     "Oligo": 10,
     "Astrocyte": 10,
     "Myeloid": 10,
-    "Vascular": 10,
     "Schwann": 10,
     "OPC": 10,
     "Endothelial": 10,
@@ -283,7 +282,7 @@ for (celltype, df_group), ax in zip(result_df.groupby("celltype"), axes):
     ax.legend()
     ax.grid(True, alpha=0.3)
 
-fig.savefig(figure_dir / f"varexpl_vs_coreset_fraction_gam.png")
+fig.savefig(figure_dir / "varexpl_vs_coreset_fraction_gam.png")
 plt.close()
 
 min_corset_df = pd.DataFrame(min_coresets_list)
@@ -372,7 +371,7 @@ for (celltype, df_group), ax in zip(result_df.groupby("celltype"), axes):
     ax.legend()
     ax.grid(True, alpha=0.3)
 
-fig.savefig(figure_dir / f"time_vs_coreset_fraction_gam.png")
+fig.savefig(figure_dir / "time_vs_coreset_fraction_gam.png")
 plt.close()
 
 time_savings_df = pd.DataFrame(time_savings_list)
@@ -388,7 +387,7 @@ p = (pn.ggplot(result_df)
      + pn.scale_x_log10()
      + pn.ylim((0, None))
      )
-p.save(figure_dir / f"time_vs_coreset_fraction.png", dpi=300, verbose=False)
+p.save(figure_dir / "time_vs_coreset_fraction.png", dpi=300, verbose=False)
 
 p = (pn.ggplot(result_df) 
      + pn.geom_point(pn.aes(x="coreset_fraction", y="mean_rel_l2_distance"))
@@ -399,7 +398,7 @@ p = (pn.ggplot(result_df)
      + pn.scale_x_log10()
      + pn.ylim((0, None))
      )
-p.save(figure_dir / f"mean_rel_l2_distance_vs_coreset_fraction.png", dpi=300, verbose=False)
+p.save(figure_dir / "mean_rel_l2_distance_vs_coreset_fraction.png", dpi=300, verbose=False)
 
 p = (pn.ggplot(result_df) 
      + pn.geom_point(pn.aes(x="coreset_fraction", y="varexpl"))
@@ -409,4 +408,4 @@ p = (pn.ggplot(result_df)
      + pn.theme(figure_size=(10, 5))
      + pn.scale_x_log10()
      )
-p.save(figure_dir / f"varexpl_vs_coreset_fraction.png", dpi=300, verbose=False)
+p.save(figure_dir / "varexpl_vs_coreset_fraction.png", dpi=300, verbose=False)

@@ -83,5 +83,11 @@ python -m code.benchmark_coresets.lupus_coreset
 echo "python -m code.benchmark_coresets.coreset_meta"
 python -m code.benchmark_coresets.coreset_meta
 
-echo "python -m code.hepatocyte_example.hepatocyte_example"
-python -m code.hepatocyte_example.hepatocyte_example
+echo "python -m code.examples.hepatocyte_example"
+python -m code.examples.hepatocyte_example
+
+echo "python -m code.examples.overview_figure"
+python -m code.examples.overview_figure
+
+echo "python -m code.examples.delta_visualization"
+python -m code.examples.delta_visualization

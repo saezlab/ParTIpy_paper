@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ## usage
-# bash workflows/run.sh [--force-reinstall] > log.txt 2>&1
+# bash workflows/run_comparison.sh [--force-reinstall] > log.txt 2>&1
 
 ## usage sandbox
-# bash workflows/run.sh --force-reinstall 2>&1 | tee log.txt
-# bash workflows/run.sh 2>&1 | tee log.txt
+# bash workflows/run_comparison.sh --force-reinstall 2>&1 | tee log.txt
+# bash workflows/run_comparison.sh 2>&1 | tee log.txt
 
 ## Exit immediately if a command exits with a non-zero status.
 set -e
@@ -56,11 +56,11 @@ fi
 mamba activate partipy
 
 # run python scripts
-echo "python -m code.examples.hepatocyte_example"
-python -m code.examples.hepatocyte_example
+echo "python -m code.benchmark_other.ms_pypcha"
+python -m code.benchmark_other.ms_pypcha
 
-echo "python -m code.examples.overview_figure"
-python -m code.examples.overview_figure
+echo "python -m code.benchmark_other.ms_xenium_pypcha"
+python -m code.benchmark_other.ms_xenium_pypcha
 
-echo "python -m code.examples.delta_visualization"
-python -m code.examples.delta_visualization
+echo "python -m code.benchmark_other.lupus_pypcha"
+python -m code.benchmark_other.lupus_pypcha

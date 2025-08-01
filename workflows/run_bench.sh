@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ## usage
-# bash scripts/run_bench.sh [--force-reinstall] > log.txt 2>&1
+# bash workflows/run_bench.sh [--force-reinstall] > log.txt 2>&1
 
 ## usage sandbox
-# bash scripts/run_bench.sh --force-reinstall 2>&1 | tee log.txt
-# bash scripts/run_bench.sh 2>&1 | tee log.txt
+# bash workflows/run_bench.sh --force-reinstall 2>&1 | tee log.txt
+# bash workflows/run_bench.sh 2>&1 | tee log.txt
 
 ## Exit immediately if a command exits with a non-zero status.
 set -e

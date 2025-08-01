@@ -1,0 +1,205 @@
+from pathlib import Path
+import time
+
+from tqdm import tqdm
+import numpy as np
+import pandas as pd
+import scanpy as sc
+import partipy as pt
+from py_pcha import PCHA
+import matplotlib
+import plotnine as pn
+
+from ..utils.data_utils import load_lupus_data
+from ..utils.const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
+
+## set up backend for matplotlib: https://matplotlib.org/stable/users/explain/figure/backends.html
+matplotlib.use("Agg")
+
+## set up output directory
+figure_dir = Path(FIGURE_PATH) / "lupus_pypcha"
+figure_dir.mkdir(exist_ok=True, parents=True)
+
+output_dir = Path(OUTPUT_PATH) / "lupus_pypcha"
+output_dir.mkdir(exist_ok=True, parents=True)
+
+## setting up different seeds to test
+seed_list = SEED_DICT["m"]
+
+coreset_fraction_list = 1 / (np.array([2**n for n in range(0, 8)]) * (25/16))
+coreset_fraction_arr = np.zeros(len(coreset_fraction_list)+1)
+coreset_fraction_arr[1:] = coreset_fraction_list
+coreset_fraction_arr[0] = 1.0
+
+script_start_time = time.time()
+print(f"### Start Time: {script_start_time}")
+
+## downloading the data (or using cached data)
+atlas_adata = load_lupus_data()
+print(atlas_adata)
+
+## qc settings
+qc_columns = ["Processing_Cohort", "disease"]
+
+celltype_column = "author_cell_type"
+celltype_labels = ["T4", "cM", "T8", "B", "NK", "ncM", "cDC", "pDC"]
+
+## number of archetypes per celltype
+archetypes_to_test = list(range(2, 10))
+number_of_archetypes_dict = {
+    "T4": 4,
+    "cM": 5,
+    "T8": 4,
+    "B": 4,
+    "NK": 4,
+    "ncM": 4,
+    "cDC": 5,
+    "pDC": 4,
+}
+assert set(celltype_labels) == set(number_of_archetypes_dict.keys())
+number_of_pcs_dict = {
+    "T4": 10,
+    "cM": 10,
+    "T8": 10,
+    "B": 10,
+    "NK": 6,
+    "ncM": 10,
+    "cDC": 10,
+    "pDC": 10,
+}
+assert set(celltype_labels) == set(number_of_pcs_dict.keys())
+
+## helper function
+def time_and_evaluate(X, n_runs: int, n_archetypes: int, seed: int):
+    """Time both methods and calculate RSS for given data X"""
+    n_samples = X.shape[0]
+
+    # Storage for results
+    partipy_times = []
+    pypcha_times = []
+    partipy_rss = []
+    pypcha_rss = []
+    partipy_varexpl = []
+    pypcha_varexpl = []
+
+    TSS = np.sum(X * X)
+
+    for _ in range(n_runs):
+        
+        # ParTIpy
+        start = time.perf_counter()
+        np.random.seed(seed=seed)
+        AA_object = pt.AA(n_archetypes=n_archetypes, verbose=False, seed=seed)
+        AA_object.fit(X)
+        Z_partipy = AA_object.Z
+        A_partipy = AA_object.A
+        partipy_time = time.perf_counter() - start
+        RSS_partipy = np.linalg.norm(np.dot(A_partipy, Z_partipy) - X) ** 2
+        RSS_norm_partipy = RSS_partipy / n_samples
+        varexpl_partipy = (TSS - RSS_partipy) / TSS
+
+        partipy_times.append(partipy_time)
+        partipy_rss.append(RSS_norm_partipy)
+        partipy_varexpl.append(varexpl_partipy)
+
+        # py_pcha
+        start = time.perf_counter()
+        np.random.seed(seed=seed)
+        XC, S, C, SSE, varexpl = PCHA(X=X.T, noc=n_archetypes)
+        Z_pypcha = np.asarray(XC.T)
+        A_pypcha = np.asarray(S.T)
+        pypcha_time = time.perf_counter() - start
+        RSS_pypcha = np.linalg.norm(np.dot(A_pypcha, Z_pypcha) - X) ** 2
+        RSS_norm_pypcha = RSS_pypcha / n_samples
+        varexpl_pypcha = (TSS - RSS_pypcha) / TSS
+
+        pypcha_times.append(pypcha_time)
+        pypcha_rss.append(RSS_norm_pypcha)
+        pypcha_varexpl.append(varexpl_pypcha)
+
+    return {
+        "partipy_time_mean": np.mean(partipy_times),
+        "partipy_time_std": np.std(partipy_times),
+        "pypcha_time_mean": np.mean(pypcha_times),
+        "pypcha_time_std": np.std(pypcha_times),
+        "partipy_rss_mean": np.mean(partipy_rss),
+        "partipy_rss_std": np.std(partipy_rss),
+        "pypcha_rss_mean": np.mean(pypcha_rss),
+        "pypcha_rss_std": np.std(pypcha_rss),
+        "partipy_varexpl_mean": np.mean(partipy_varexpl),
+        "partipy_varexpl_std": np.std(partipy_varexpl),
+        "pypcha_varexpl_mean": np.mean(pypcha_varexpl),
+        "pypcha_varexpl_std": np.std(pypcha_varexpl),
+    }
+
+## initialize list to save the benchmarking results
+result_list = []
+
+N_RUNS = 3
+
+for celltype in celltype_labels:
+    ## set up plotting directory per celltype
+    figure_dir_celltype = figure_dir / celltype
+    figure_dir_celltype.mkdir(exist_ok=True)
+
+    ## subsetting and preprocessing per celltype
+    adata = atlas_adata[atlas_adata.obs[celltype_column] == celltype, :].copy()
+    print("\n#####\n->", celltype, "\n", adata)
+    sc.pp.normalize_total(adata)
+    sc.pp.log1p(adata)
+    sc.pp.highly_variable_genes(adata)
+    sc.pp.pca(adata, mask_var="highly_variable")
+
+    X = adata.obsm["X_pca"][:, :10]
+
+    pbar = tqdm(seed_list)
+    for seed in pbar:
+        pbar.set_description(f"Seed: {seed}")
+
+        X = X.copy()
+
+        n_archetypes = number_of_archetypes_dict[celltype]
+
+        result = time_and_evaluate(
+            X, n_runs=N_RUNS, n_archetypes=n_archetypes, seed=seed
+        )
+        result["seed"] = seed
+        result["celltype"] = celltype
+        result["n_cells"] = X.shape[0]
+        result["n_dim"] = X.shape[1]
+        result_list.append(result)
+
+result_df = pd.DataFrame(result_list)
+result_df.to_csv(output_dir / "results.csv", index=False)
+
+df_plot = result_df[
+    [
+        "partipy_time_mean",
+        "pypcha_time_mean",
+        "partipy_varexpl_mean",
+        "pypcha_varexpl_mean",
+        "celltype",
+        "seed",
+    ]
+]
+df_plot = df_plot.melt(id_vars=["celltype", "seed"])
+df_plot["algorithm"] = [v.split("_")[0] for v in df_plot["variable"]]
+df_plot["statistic"] = [v.split("_")[1] for v in df_plot["variable"]]
+df_plot = df_plot.drop(columns=["variable"])
+df_plot = df_plot.pivot(
+    index=["celltype", "algorithm", "seed"], columns="statistic", values="value"
+)
+df_plot = df_plot.reset_index()
+
+color_map = {"partipy": "#10AC5B", "pypcha": "#B01CD1"}
+
+p = (
+    pn.ggplot(df_plot)
+    + pn.geom_point(pn.aes(x="time", y="varexpl", color="algorithm"), size=5, alpha=0.5)
+    + pn.facet_wrap("celltype", scales="free")
+    + pn.scale_color_manual(values=color_map)
+    + pn.theme_bw()
+    + pn.theme(figure_size=(8, 4))
+    + pn.labs(x="Time (s)", y="Variance Explained")
+)
+p.save(figure_dir / "varexpl_vs_time.png", dpi=300, verbose=False)

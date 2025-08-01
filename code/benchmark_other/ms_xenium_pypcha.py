@@ -24,7 +24,7 @@ output_dir = Path(OUTPUT_PATH) / "mx_xenium_pypcha"
 output_dir.mkdir(exist_ok=True, parents=True)
 
 ## setting up different seeds to test
-seed_list = SEED_DICT["s"]
+seed_list = SEED_DICT["m"]
 
 script_start_time = time.time()
 print(f"### Start Time: {script_start_time}")
@@ -137,8 +137,7 @@ def time_and_evaluate(X, n_runs: int, n_archetypes: int, seed: int):
 
         # py_pcha
         start = time.perf_counter()
-        np.random.seed(seed=seed)
-        XC, S, C, SSE, varexpl = PCHA(X=X.T, noc=n_archetypes)
+        XC, S, C, SSE, varexpl = PCHA(X=X.T, noc=n_archetypes, seed=seed)
         Z_pypcha = np.asarray(XC.T)
         A_pypcha = np.asarray(S.T)
         pypcha_time = time.perf_counter() - start
@@ -229,10 +228,14 @@ color_map = {"partipy": "#10AC5B", "pypcha": "#B01CD1"}
 p = (
     pn.ggplot(df_plot)
     + pn.geom_point(pn.aes(x="time", y="varexpl", color="algorithm"), size=5, alpha=0.5)
-    + pn.facet_wrap("celltype", scales="free")
+    + pn.facet_wrap("celltype", scales="free_x", ncol=4)
     + pn.scale_color_manual(values=color_map)
     + pn.theme_bw()
-    + pn.theme(figure_size=(8, 4))
-    + pn.labs(x="Time (s)", y="Variance Explained")
+    + pn.theme(
+        figure_size=(10, 5),
+        strip_background=pn.element_rect(fill="none", color="black")
+    )
+    + pn.labs(x="Time (s)", y="Variance Explained", color="Algorithm")
+    + pn.xlim(0, None)
 )
 p.save(figure_dir / "varexpl_vs_time.png", dpi=300, verbose=False)

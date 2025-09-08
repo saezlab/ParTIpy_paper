@@ -43,6 +43,8 @@ df_2 = df_2.join(df_2_meta.set_index("celltype"), on="celltype", how="left")
 df = pd.concat([df_0, df_1, df_2])
 df["log10_n_samples"] = np.log10(df["n_samples"])
 
+# adding the time fraction as well
+df["time_fraction"] = df["coreset_time"] / df["full_time"]
 df.to_csv(output_dir / "summary.csv")
 
 archetype_colors = {
@@ -66,6 +68,17 @@ p = (pn.ggplot(df, mapping=pn.aes(x="n_samples", y="time_saving"))
      + pn.theme(axis_text=pn.element_text(size=12), axis_title=pn.element_text(size=16))
      )
 p.save(figure_dir / "time_saving_vs_number_of_cells.pdf", dpi=300, verbose=True)
+
+p = (pn.ggplot(df, mapping=pn.aes(x="n_samples", y="time_fraction")) 
+     + pn.geom_point(pn.aes(color="n_archetypes"), size=5) 
+     + pn.geom_smooth(method="lm") 
+     + pn.scale_x_log10()
+     + pn.labs(x="Number of Cells", y="Fraction of Time", color="Number of\nArchetypes")
+     + pn.scale_color_manual(values=archetype_colors)
+     + pn.theme_bw()
+     + pn.theme(axis_text=pn.element_text(size=12), axis_title=pn.element_text(size=16))
+     )
+p.save(figure_dir / "time_fraction_vs_number_of_cells.pdf", dpi=300, verbose=True)
 
 p = (pn.ggplot(df, mapping=pn.aes(x="n_samples", y="coreset_size")) 
      + pn.geom_point(pn.aes(color="n_archetypes"), size=5) 

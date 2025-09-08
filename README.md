@@ -1,7 +1,10 @@
 # ParTIpy: A Scalable Framework for Archetypal Analysis and Pareto Task Inference
 
-This repository accompanies the preprint **“ParTIpy: A Scalable Framework for Archetypal Analysis and Pareto Task Inference.”**  
-It provides benchmarks, and examples for applying Archetypal Analysis (AA) and Pareto Task Inference (ParTI) to large-scale biological datasets.
+This repository accompanies the preprint **“ParTIpy: A Scalable Framework for Archetypal Analysis and Pareto Task Inference”**.
+
+It contains the code to reproduce benchmarks of initialization and optimization strategies, as well as experiments evaluating coreset sizes and performance gains in Archetypal Analysis.
+
+For additional examples and applications of Archetypal Analysis and Pareto Task Inference on single-cell and spatial omics data, please refer to the [documentation](https://partipy.readthedocs.io/en/latest/).
 
 ---
 

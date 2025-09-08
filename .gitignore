@@ -9,6 +9,5 @@ data/*
 *.sqlite
 *.txt.gz
 *.txt
-#*.csv
 *.pkl
 *.h5ad

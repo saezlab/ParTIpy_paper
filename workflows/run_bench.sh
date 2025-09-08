@@ -56,11 +56,14 @@ fi
 mamba activate partipy
 
 ## run python scripts
-echo "python ms_bench.py"
-python ms_bench.py
+echo "python -m code.benchmark_algorithms.ms_bench"
+python -m code.benchmark_algorithms.ms_bench
 
-echo "python ms_xenium_bench.py"
-python ms_xenium_bench.py
+echo "python -m code.benchmark_algorithms.ms_xenium_bench"
+python -m code.benchmark_algorithms.ms_xenium_bench
 
-echo "python lupus_bench.py"
-python lupus_bench.py
+echo "python -m code.benchmark_algorithms.lupus_bench"
+python -m code.benchmark_algorithms.lupus_bench
+
+echo "python -m code.benchmark_algorithms.bench_meta"
+python -m code.benchmark_algorithms.bench_meta

@@ -56,11 +56,15 @@ fi
 mamba activate partipy
 
 ## run python scripts
-echo "python ms_coreset.py"
-python ms_coreset.py
+echo "python -m code.benchmark_coresets.ms_coreset"
+python -m code.benchmark_coresets.ms_coreset
 
-echo "python ms_xenium_coreset.py"
-python ms_xenium_coreset.py
+echo "python -m code.benchmark_coresets.ms_xenium_coreset"
+python -m code.benchmark_coresets.ms_xenium_coreset
 
-echo "python lupus_coreset.py"
-python lupus_coreset.py
+echo "python -m code.benchmark_coresets.lupus_coreset"
+python -m code.benchmark_coresets.lupus_coreset
+
+echo "python -m code.benchmark_coresets.coreset_meta"
+python -m code.benchmark_coresets.coreset_meta
+

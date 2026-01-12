@@ -1,6 +1,10 @@
 from pathlib import Path
+import multiprocessing as mp
+import os
+import resource
 import time
 import pickle
+import traceback
 
 from tqdm import tqdm
 import numpy as np
@@ -23,6 +27,65 @@ figure_dir.mkdir(exist_ok=True, parents=True)
 
 output_dir = Path(OUTPUT_PATH) / "lupus_bench"
 output_dir.mkdir(exist_ok=True, parents=True)
+
+def get_rss_mb():
+    """Current resident set size (RSS) in MB (Linux /proc)."""
+    with open("/proc/self/statm", "r", encoding="utf-8") as handle:
+        rss_pages = int(handle.read().split()[1])
+    return rss_pages * os.sysconf("SC_PAGE_SIZE") / (1024 ** 2)
+
+def get_peak_rss_mb():
+    """Peak RSS in MB since process start (Linux ru_maxrss in KB)."""
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
+
+_MP_ADATA = None
+
+def _benchmark_worker(result_queue, optim_dict, seed, n_archetypes):
+    try:
+        adata_bench = _MP_ADATA.copy()
+
+        rss_start_mb = get_rss_mb()
+        peak_start_mb = get_peak_rss_mb()
+        start_time = time.time()
+
+        pt.compute_archetypes(
+            adata_bench,
+            n_archetypes=n_archetypes,
+            n_restarts=1,
+            init=optim_dict["init_alg"],
+            optim=optim_dict["optim_alg"],
+            weight=None,
+            seed=seed,
+            save_to_anndata=True,
+            archetypes_only=False,
+            verbose=False,
+        )
+
+        end_time = time.time()
+        rss_end_mb = get_rss_mb()
+        peak_end_mb = get_peak_rss_mb()
+
+        result_queue.put(
+            {
+                "ok": True,
+                "time": end_time - start_time,
+                "mem_rss_start_mb": rss_start_mb,
+                "mem_rss_end_mb": rss_end_mb,
+                "mem_rss_delta_mb": rss_end_mb - rss_start_mb,
+                "mem_rss_peak_mb": peak_end_mb,
+                "mem_rss_peak_delta_mb": peak_end_mb - peak_start_mb,
+                "rss_trace": adata_bench.uns["AA_results"]["RSS"],
+                "rss": adata_bench.uns["AA_results"]["RSS"][-1],
+                "varexpl": adata_bench.uns["AA_results"]["varexpl"],
+            }
+        )
+    except Exception:
+        result_queue.put(
+            {
+                "ok": False,
+                "error": traceback.format_exc(),
+            }
+        )
 
 ## setting up the optimization seetings
 init_alg_list = pt.const.INIT_ALGS
@@ -137,6 +200,9 @@ for celltype in celltype_labels:
     p = pt.plot_bootstrap_2D(adata, n_archetypes=number_of_archetypes_dict[celltype])
     p.save(figure_dir_celltype / "aa_bootstrap_2D.png", dpi=300)
 
+    _MP_ADATA = adata
+    mp_ctx = mp.get_context("fork")
+
     ## benchmark
     print("Running the benchmark...")
     for optim_dict in optim_settings_list:
@@ -147,33 +213,35 @@ for celltype in celltype_labels:
         for seed in pbar:
             pbar.set_description(f"Seed: {seed}")
 
-            adata_bench = adata.copy()
+            result_queue = mp_ctx.Queue()
+            proc = mp_ctx.Process(
+                target=_benchmark_worker,
+                args=(result_queue, optim_dict, seed, number_of_archetypes_dict[celltype]),
+            )
+            proc.start()
+            result = result_queue.get()
+            proc.join()
+            if proc.exitcode != 0:
+                raise RuntimeError(f"Worker exited with code {proc.exitcode}")
+            if not result["ok"]:
+                raise RuntimeError(result["error"])
 
-            start_time = time.time()
-            
-            pt.compute_archetypes(adata_bench, 
-                                  n_archetypes=number_of_archetypes_dict[celltype],
-                                  n_restarts=1,
-                                  init=optim_dict["init_alg"],
-                                  optim=optim_dict["optim_alg"],
-                                  weight=None,
-                                  seed=seed,
-                                  save_to_anndata=True,
-                                  archetypes_only=False,
-                                  verbose=False)
-            
-            end_time = time.time()
-            execution_time = end_time - start_time
+            execution_time = result["time"]
 
-            rss_trace_dict[celltype][optim_key][seed] = adata_bench.uns["AA_results"]["RSS"]
+            rss_trace_dict[celltype][optim_key][seed] = result["rss_trace"]
 
             result_dict = {
                 "celltype": celltype,
                 "time": execution_time,
-                "rss": adata_bench.uns["AA_results"]["RSS"][-1],
-                "varexpl": adata_bench.uns["AA_results"]["varexpl"],
+                "mem_rss_start_mb": result["mem_rss_start_mb"],
+                "mem_rss_end_mb": result["mem_rss_end_mb"],
+                "mem_rss_delta_mb": result["mem_rss_delta_mb"],
+                "mem_rss_peak_mb": result["mem_rss_peak_mb"],
+                "mem_rss_peak_delta_mb": result["mem_rss_peak_delta_mb"],
+                "rss": result["rss"],
+                "varexpl": result["varexpl"],
                 "seed": seed,
-                "n_samples": adata_bench.shape[0],
+                "n_samples": adata.shape[0],
                 "n_dimensions": number_of_pcs_dict[celltype],
                 "n_archetypes": number_of_archetypes_dict[celltype],
             }

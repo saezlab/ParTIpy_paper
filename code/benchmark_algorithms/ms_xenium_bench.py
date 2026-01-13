@@ -10,6 +10,7 @@ import partipy as pt
 import plotnine as pn
 import matplotlib
 import matplotlib.pyplot as plt
+from partipy.schema import INIT_ALGS, OPTIM_ALGS
 
 from ..utils.data_utils import load_ms_xenium_data
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
@@ -25,8 +26,8 @@ output_dir = Path(OUTPUT_PATH) / "ms_xenium_bench"
 output_dir.mkdir(exist_ok=True, parents=True)
 
 ## setting up the optimization seetings
-init_alg_list = pt.const.INIT_ALGS
-optim_alg_list = [alg for alg in pt.const.OPTIM_ALGS if alg != "regularized_nnls"]
+init_alg_list = INIT_ALGS
+optim_alg_list = [alg for alg in OPTIM_ALGS if alg != "regularized_nnls"]
 optim_settings_list = []
 for init_alg in init_alg_list:
     for optim_alg in optim_alg_list:

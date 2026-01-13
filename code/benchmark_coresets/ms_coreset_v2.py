@@ -1,12 +1,13 @@
 from pathlib import Path
 import time
+from joblib import Parallel, delayed
 
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import scanpy as sc
 import partipy as pt
-from partipy.utils import align_archetypes, compute_relative_rowwise_l2_distance
+from partipy.utils import compute_relative_rowwise_l2_distance
 import plotnine as pn
 import matplotlib
 import matplotlib.pyplot as plt
@@ -14,6 +15,22 @@ from statsmodels.gam.api import GLMGam, BSplines
 from statsmodels.genmod.families import Gaussian
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
+import anndata
+
+from partipy.arch import AA
+from partipy.schema import (
+    DEFAULT_MAX_ITER,
+    DEFAULT_REL_TOL,
+)
+from partipy.paretoti import (
+    compute_archetypes,
+    _align_archetypes,
+    _validate_aa_config,
+    _normalize_init_literal,
+    _normalize_optim_literal,
+    _normalize_weight_literal,
+    _normalize_coreset_literal,
+)
 
 # replacement code when running notebook for debugging
 # from pathlib import Path
@@ -24,19 +41,166 @@ from scipy.spatial.distance import cdist
 # sys.modules.pop("code", None)
 # from code.utils.data_utils import load_ms_data
 # from code.utils.const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
-# def get_minimal_value_key(dict_input):
-#    return int(
-#        np.array(list(dict_input.keys()))[
-#            np.argmin(np.array(list(dict_input.values())))
-#        ]
-#    )
-
 
 from ..utils.data_utils import load_ms_data
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
 
 
-## define helper function
+## define helper functions
+def compute_bootstrap_stats(
+    adata: anndata.AnnData,
+    n_bootstrap: int,
+    n_archetypes: int,
+    ref_Z: np.ndarray | None = None,
+    init: str | None = None,
+    optim: str | None = None,
+    weight: None | str = None,
+    max_iter: int | None = None,
+    early_stopping: bool = True,
+    rel_tol: float | None = None,
+    coreset_algorithm: None | str = None,
+    coreset_fraction: float = 0.1,
+    coreset_size: None | int = None,
+    delta: float = 0.0,
+    seed: int = 42,
+    n_jobs: int = -1,
+    verbose: bool = False,
+    **optim_kwargs,
+) -> dict[str, np.ndarray | float]:
+    # input validation
+    _validate_aa_config(adata=adata)
+
+    obsm_key = adata.uns["AA_config"]["obsm_key"]
+    n_dimensions = adata.uns["AA_config"]["n_dimensions"]
+    if isinstance(n_dimensions, int):
+        n_dimensions = list(range(n_dimensions))
+    X = adata.obsm[obsm_key][:, n_dimensions]
+
+    n_samples, n_features = X.shape
+    rng = np.random.default_rng(seed)
+
+    # Use the provided values or fall back to the defaults
+    init = _normalize_init_literal(init)
+    optim = _normalize_optim_literal(optim)
+    weight = _normalize_weight_literal(weight)
+    max_iter = max_iter if max_iter is not None else DEFAULT_MAX_ITER
+    rel_tol = rel_tol if rel_tol is not None else DEFAULT_REL_TOL
+    coreset_algorithm = _normalize_coreset_literal(coreset_algorithm)
+    verbose = verbose if verbose is not None else False
+
+    # Reference archetypes
+    if ref_Z is None:
+        _A, _B, ref_Z, _RSS, _varexpl = compute_archetypes(
+            adata=adata,
+            n_archetypes=n_archetypes,
+            init=init,
+            optim=optim,
+            weight=weight,
+            max_iter=max_iter,
+            early_stopping=early_stopping,
+            rel_tol=rel_tol,
+            coreset_algorithm=coreset_algorithm,
+            coreset_fraction=coreset_fraction,
+            coreset_size=coreset_size,
+            delta=delta,
+            seed=seed,
+            return_result=True,
+            archetypes_only=False,
+            **optim_kwargs,
+        )
+    else:
+        assert ref_Z.shape[0] == n_archetypes
+
+    idx_bootstrap = rng.choice(n_samples, size=(n_bootstrap, n_samples), replace=True)
+
+    def compute_bootstrap_z(idx, n_archetypes=n_archetypes):
+        return (
+            AA(
+                n_archetypes=n_archetypes,
+                optim=optim,
+                init=init,
+                weight=weight,
+                max_iter=max_iter,
+                early_stopping=early_stopping,
+                rel_tol=rel_tol,
+                coreset_algorithm=coreset_algorithm,
+                coreset_fraction=coreset_fraction,
+                coreset_size=coreset_size,
+                delta=delta,
+                seed=seed,
+                **optim_kwargs,
+            )
+            .fit(X[idx, :])
+            .Z
+        )
+
+    if verbose:
+        Z_list = Parallel(n_jobs=n_jobs)(
+            delayed(compute_bootstrap_z)(idx)
+            for idx in tqdm(
+                idx_bootstrap,
+                total=n_bootstrap,
+                desc=f"Testing {n_archetypes} Archetypes",
+            )
+        )
+    else:
+        Z_list = Parallel(n_jobs=n_jobs)(
+            delayed(compute_bootstrap_z)(idx) for idx in idx_bootstrap
+        )
+
+    Z_list = [
+        _align_archetypes(ref_arch=ref_Z.copy(), query_arch=query_Z.copy())
+        for query_Z in Z_list
+    ]
+
+    Z_stack = np.stack(Z_list)
+    assert Z_stack.shape == (n_bootstrap, n_archetypes, n_features)
+
+    mean = Z_stack.mean(axis=0)
+    var = Z_stack.var(axis=0, ddof=1)
+
+    cov = np.zeros((n_archetypes, n_features, n_features), dtype=float)
+    cov_inv = np.zeros_like(cov)
+    ridge = np.zeros(n_archetypes, dtype=float)
+    cond = np.zeros(n_archetypes, dtype=float)
+
+    for k in range(n_archetypes):
+        sample = Z_stack[:, k, :]
+        cov_k = np.cov(sample, rowvar=False, ddof=1)
+        trace = np.trace(cov_k)
+        ridge_k = 1e-6 * (trace / n_features if trace > 0 else 1.0)
+        cov_k_reg = cov_k + ridge_k * np.eye(n_features)
+
+        cov[k] = cov_k_reg
+        ridge[k] = ridge_k
+        try:
+            cov_inv[k] = np.linalg.inv(cov_k_reg)
+        except np.linalg.LinAlgError:
+            cov_inv[k] = np.linalg.pinv(cov_k_reg)
+        cond[k] = np.linalg.cond(cov_k_reg)
+
+    bootstrap_mahalanobis = np.zeros((n_bootstrap, n_archetypes), dtype=float)
+    bootstrap_scaled_euclid = np.zeros((n_bootstrap, n_archetypes), dtype=float)
+    for k in range(n_archetypes):
+        diff = Z_stack[:, k, :] - mean[k]
+        bootstrap_mahalanobis[:, k] = np.sqrt(
+            np.einsum("ij,jk,ik->i", diff, cov_inv[k], diff)
+        )
+        var_k = np.maximum(var[k], 1e-8)
+        bootstrap_scaled_euclid[:, k] = np.sqrt(np.sum((diff**2) / var_k, axis=1))
+
+    return {
+        "mean": mean,
+        "cov": cov,
+        "cov_inv": cov_inv,
+        "var": var,
+        "ridge": ridge,
+        "cond": cond,
+        "bootstrap_mahalanobis": bootstrap_mahalanobis,
+        "bootstrap_scaled_euclid": bootstrap_scaled_euclid,
+    }
+
+
 def get_minimal_value_key(dict_input):
     return int(
         np.array(list(dict_input.keys()))[
@@ -65,10 +229,10 @@ def pearsonr_per_row(mtx_1: np.ndarray, mtx_2: np.ndarray, return_pval: bool = F
 matplotlib.use("Agg")
 
 ## set up output directory
-figure_dir = Path(FIGURE_PATH) / "ms_coreset"
+figure_dir = Path(FIGURE_PATH) / "ms_coreset_v2"
 figure_dir.mkdir(exist_ok=True, parents=True)
 
-output_dir = Path(OUTPUT_PATH) / "ms_coreset"
+output_dir = Path(OUTPUT_PATH) / "ms_coreset_v2"
 output_dir.mkdir(exist_ok=True, parents=True)
 
 ## setting up different seeds to test TODO: Change this
@@ -163,15 +327,26 @@ for celltype in celltype_labels:
     adata_ref = adata.copy()
     pt.compute_archetypes(
         adata_ref,
+        n_restarts=5,
         n_archetypes=number_of_archetypes_dict[celltype],
         seed=42,
         save_to_anndata=True,
         archetypes_only=False,
         verbose=False,
     )
-
-    reference_archetypes_pos_dict = {}
-    reference_archetype_char_gex_dict = {}
+    pt.compute_archetype_weights(adata=adata_ref, mode="automatic")
+    archetype_expression_ref = pt.compute_archetype_expression(
+        adata=adata_ref, layer="z_scaled"
+    )
+    ref_Z = pt.get_aa_result(
+        adata_ref, n_archetypes=number_of_archetypes_dict[celltype]
+    )["Z"]
+    bootstrap_stats = compute_bootstrap_stats(
+        adata=adata_ref,
+        n_archetypes=number_of_archetypes_dict[celltype],
+        n_bootstrap=100,
+        ref_Z=ref_Z,
+    )
 
     for coreset_fraction in coreset_fraction_arr:
         print(coreset_fraction)
@@ -187,9 +362,11 @@ for celltype in celltype_labels:
             pt.compute_archetypes(
                 adata_bench,
                 n_archetypes=number_of_archetypes_dict[celltype],
-                n_restarts=1,
+                n_restarts=5,
                 coreset_algorithm="standard" if coreset_fraction < 1 else None,
-                coreset_fraction=coreset_fraction,
+                coreset_fraction=coreset_fraction
+                if coreset_fraction < 1
+                else 0.1,  # NOTE: because I am not allowed to put 1.0
                 seed=seed,
                 save_to_anndata=True,
                 archetypes_only=False,
@@ -202,51 +379,79 @@ for celltype in celltype_labels:
                 adata=adata_bench, layer="z_scaled"
             )
 
-            if coreset_fraction == 1.0:
-                reference_archetypes_pos_dict[seed] = adata_bench.uns["AA_results"]["Z"]
-                reference_archetype_char_gex_dict[seed] = archetype_expression
-
             end_time = time.time()
             execution_time = end_time - start_time
 
-            # compute euclidean distance to all reference archetype runs
-            euclidean_distances = {}
-            query_idx_dict = {}
-            for seed_key, ref_arch in reference_archetypes_pos_dict.items():
-                query_arch = adata_bench.uns["AA_results"]["Z"].copy()
-                euclidean_d = cdist(ref_arch, query_arch, metric="euclidean")
-
-                # Find the optimal assignment using the Hungarian algorithm
-                _ref_idx, query_idx = linear_sum_assignment(euclidean_d)
-
-                # compute mean euclidean distance
-                euclidean_distance_per_matched_arch = np.sum(
-                    (ref_arch[_ref_idx, :] - query_arch[query_idx, :]) ** 2, axis=1
-                )
-                euclidean_distances[seed_key] = np.mean(
-                    euclidean_distance_per_matched_arch
-                )
-                query_idx_dict[seed_key] = query_idx
-
-            # compute mean pearson correlation of the pathway enrichment
-            seed_min = get_minimal_value_key(euclidean_distances)
-            pearson_corr_per_matched_arch = pearsonr_per_row(
-                reference_archetype_char_gex_dict[seed_min].to_numpy(),
-                archetype_expression.iloc[query_idx_dict[seed_min], :].to_numpy(),
+            Z = ref_Z
+            bench_results = pt.get_aa_result(
+                adata_bench, n_archetypes=number_of_archetypes_dict[celltype]
             )
-
-            Z = adata_ref.uns["AA_results"]["Z"].copy()
-            Z_hat = adata_bench.uns["AA_results"]["Z"].copy()
-            Z_hat = align_archetypes(Z, Z_hat)
+            Z_hat = bench_results["Z"].copy()
+            rss = bench_results["RSS_full"].copy()
+            varexpl = bench_results["varexpl"].copy()
+            assert np.all(Z.shape == Z_hat.shape)
+            euclidean_d = cdist(Z, Z_hat, metric="euclidean")
+            ref_idx, query_idx = linear_sum_assignment(euclidean_d)
+            Z_hat = Z_hat[query_idx, :]
+            archetype_expression = archetype_expression.iloc[query_idx, :].copy()
+            euclid_dist_per_matched_arch = np.linalg.norm(Z - Z_hat, axis=1)
+            bootstrap_mean = bootstrap_stats["mean"]
+            bootstrap_cov_inv = bootstrap_stats["cov_inv"]
+            bootstrap_var = bootstrap_stats["var"]
+            diff_to_bootstrap_mean = Z_hat - bootstrap_mean
+            mahalanobis_dist_per_matched_arch = np.zeros(Z_hat.shape[0])
+            scaled_euclid_dist_per_matched_arch = np.zeros(Z_hat.shape[0])
+            for arch_idx in range(Z_hat.shape[0]):
+                diff_vec = diff_to_bootstrap_mean[arch_idx]
+                mahalanobis_dist_per_matched_arch[arch_idx] = np.sqrt(
+                    diff_vec @ bootstrap_cov_inv[arch_idx] @ diff_vec
+                )
+                var_vec = np.maximum(bootstrap_var[arch_idx], 1e-8)
+                scaled_euclid_dist_per_matched_arch[arch_idx] = np.sqrt(
+                    np.sum((diff_vec**2) / var_vec)
+                )
+            bootstrap_mahalanobis = bootstrap_stats["bootstrap_mahalanobis"]
+            bootstrap_scaled_euclid = bootstrap_stats["bootstrap_scaled_euclid"]
+            mahalanobis_percentile_per_matched_arch = (
+                np.mean(
+                    bootstrap_mahalanobis <= mahalanobis_dist_per_matched_arch[None, :],
+                    axis=0,
+                )
+                * 100.0
+            )
+            scaled_euclid_percentile_per_matched_arch = (
+                np.mean(
+                    bootstrap_scaled_euclid
+                    <= scaled_euclid_dist_per_matched_arch[None, :],
+                    axis=0,
+                )
+                * 100.0
+            )
+            pearson_corr_per_matched_arch = pearsonr_per_row(
+                archetype_expression_ref.to_numpy(),
+                archetype_expression.to_numpy(),
+            )
             rel_dist_between_archetypes = compute_relative_rowwise_l2_distance(Z, Z_hat)
 
             result_dict = {
                 "celltype": celltype,
                 "time": execution_time,
-                "min_l2_distance_to_ref": euclidean_distances[seed_min],
+                "l2_distance": np.mean(euclid_dist_per_matched_arch),
+                "mahalanobis_to_bootstrap_mean": np.mean(
+                    mahalanobis_dist_per_matched_arch
+                ),
+                "scaled_euclid_to_bootstrap_mean": np.mean(
+                    scaled_euclid_dist_per_matched_arch
+                ),
+                "mahalanobis_bootstrap_percentile": np.mean(
+                    mahalanobis_percentile_per_matched_arch
+                ),
+                "scaled_euclid_bootstrap_percentile": np.mean(
+                    scaled_euclid_percentile_per_matched_arch
+                ),
                 "mean_gex_corr": np.mean(pearson_corr_per_matched_arch),
-                "rss": adata_bench.uns["AA_results"]["RSS_full"],
-                "varexpl": adata_bench.uns["AA_results"]["varexpl"],
+                "rss": rss,
+                "varexpl": varexpl,
                 "mean_rel_l2_distance": np.mean(rel_dist_between_archetypes),
                 "seed": seed,
                 "coreset_fraction": coreset_fraction,
@@ -466,6 +671,88 @@ plt.close()
 
 time_savings_df = pd.DataFrame(time_savings_list)
 time_savings_df.to_csv(output_dir / "time_savings.csv", index=False)
+
+# plot the other metrics
+for yvar in [
+    "l2_distance",
+    "mahalanobis_to_bootstrap_mean",
+    "scaled_euclid_to_bootstrap_mean",
+    "mahalanobis_bootstrap_percentile",
+    "scaled_euclid_bootstrap_percentile",
+    "mean_gex_corr",
+]:
+    ncols = 4
+    n_celltypes = result_df["celltype"].nunique()
+    nrows = int(np.ceil(n_celltypes / ncols))
+
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(20, 5 * nrows))
+    axes = axes.flatten()
+    for (celltype, df_group), ax in zip(result_df.groupby("celltype"), axes):
+        df_group = df_group.copy()
+
+        n_samples = df_group["n_samples"].to_numpy()[0]
+        n_dimensions = df_group["n_dimensions"].to_numpy()[0]
+        n_archetypes = df_group["n_archetypes"].to_numpy()[0]
+
+        df_group["log10_coreset_fraction"] = np.log10(df_group["coreset_fraction"])
+        df_group = df_group[["log10_coreset_fraction", yvar]].dropna()
+        df_group = df_group.sort_values("log10_coreset_fraction")
+
+        # extract the variables
+        x = df_group["log10_coreset_fraction"].values
+        y = df_group[yvar].values
+
+        # Create B-spline basis functions
+        # You can adjust the number of knots and degree as needed
+        n_splines = 7  # Number of basis functions
+        spline_basis = BSplines(x, df=n_splines, degree=2)
+
+        # Add intercept term
+        intercept = np.ones((len(x), 1))
+
+        # Fit the GAM model with intercept
+        gam_model = GLMGam(y, exog=intercept, smoother=spline_basis, family=Gaussian())
+        gam_results = gam_model.fit()
+
+        # Generate predictions for plotting
+        x_pred = np.linspace(x.min(), x.max(), 100)
+
+        # Create intercept for predictions
+        intercept_pred = np.ones((len(x_pred), 1))
+
+        # Get predictions using the model"s predict method
+        y_pred_mean = gam_results.predict(
+            exog=intercept_pred, exog_smooth=x_pred.reshape(-1, 1)
+        )
+
+        # For confidence intervals, we"ll use a simpler approach
+        # Calculate standard errors manually or use bootstrap if needed
+        # For now, let"s create a basic confidence interval using residual std
+        residual_std = np.std(gam_results.resid_response)
+        y_pred_ci = 1.96 * residual_std  # Approximate 95% CI
+
+        # Residual analysis
+        residuals = gam_results.resid_response
+        fitted_values = gam_results.fittedvalues
+
+        # Plot the results
+        ax.scatter(x, y, alpha=0.5, label="Data points")
+        ax.plot(x_pred, y_pred_mean, "r-", linewidth=2, label="GAM fit")
+        ax.fill_between(
+            x_pred,
+            y_pred_mean - y_pred_ci,
+            y_pred_mean + y_pred_ci,
+            alpha=0.3,
+            color="red",
+            label="Approx 95% CI",
+        )
+        ax.set_title(f"{celltype} | {n_samples}")
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+
+    fig.savefig(figure_dir / f"{yvar}_vs_coreset_fraction_gam.png")
+    plt.close()
+
 
 # lastly some ggplots
 p = (

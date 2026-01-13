@@ -1,0 +1,51 @@
+2026-01-13 19:12:07,946 INFO k562_memory_bench: Starting K562 memory benchmark
+2026-01-13 19:12:07,947 INFO k562_memory_bench: Output dir: /gpfs/lsdf02/sd22b002/projects/ParTIpy_paper/output/k562_memory_bench
+2026-01-13 19:12:07,947 INFO k562_memory_bench: Figure dir: /gpfs/lsdf02/sd22b002/projects/ParTIpy_paper/figures/k562_memory_bench
+2026-01-13 19:12:07,947 INFO k562_memory_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 19:13:01,372 INFO k562_memory_bench: Loaded data: n_obs=1814089 n_vars=8248
+2026-01-13 19:13:18,166 INFO k562_memory_bench: Subsampled to n_obs=1000000 (max=1000000)
+2026-01-13 19:13:18,180 INFO k562_memory_bench: Running preprocessing: normalize_total, log1p, highly_variable_genes
+2026-01-13 19:16:29,890 INFO k562_memory_bench: Benchmark settings: n_archetypes=[2, 3, 4, 5, 6]
+2026-01-13 19:16:29,890 INFO k562_memory_bench: Benchmark settings: n_cells=[1000, 2000, 10000, 20000, 100000, 200000, 1000000]
+2026-01-13 19:16:29,890 INFO k562_memory_bench: Benchmark settings: seeds=[383329927, 3324115916]
+2026-01-13 19:16:29,890 INFO k562_memory_bench: Benchmarking n_archetypes=2
+2026-01-13 19:16:29,912 INFO k562_memory_bench: Using n_cells=1000 (subsampled)
+2026-01-13 19:16:29,912 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 19:21:33,983 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=1000 seed=383329927 time_total=3.29s time_compute=3.23s rss_peak=37198.91MB
+2026-01-13 19:21:33,983 INFO k562_memory_bench: Benchmarking seed=3324115916
+2026-01-13 19:26:36,620 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=1000 seed=3324115916 time_total=2.19s time_compute=2.14s rss_peak=37198.92MB
+2026-01-13 19:26:36,636 INFO k562_memory_bench: Using n_cells=2000 (subsampled)
+2026-01-13 19:26:36,636 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 19:31:39,539 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=2000 seed=383329927 time_total=2.45s time_compute=2.32s rss_peak=37198.93MB
+2026-01-13 19:31:39,539 INFO k562_memory_bench: Benchmarking seed=3324115916
+2026-01-13 19:36:42,341 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=2000 seed=3324115916 time_total=2.34s time_compute=2.22s rss_peak=37198.93MB
+2026-01-13 19:36:42,389 INFO k562_memory_bench: Using n_cells=10000 (subsampled)
+2026-01-13 19:36:42,389 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 19:41:46,313 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=10000 seed=383329927 time_total=3.48s time_compute=3.26s rss_peak=37680.42MB
+2026-01-13 19:41:46,315 INFO k562_memory_bench: Benchmarking seed=3324115916
+2026-01-13 19:46:50,017 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=10000 seed=3324115916 time_total=3.24s time_compute=3.02s rss_peak=37680.42MB
+2026-01-13 19:46:50,073 INFO k562_memory_bench: Using n_cells=20000 (subsampled)
+2026-01-13 19:46:50,073 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 19:51:55,425 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=20000 seed=383329927 time_total=4.99s time_compute=4.60s rss_peak=38164.30MB
+2026-01-13 19:51:55,425 INFO k562_memory_bench: Benchmarking seed=3324115916
+2026-01-13 19:57:00,558 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=20000 seed=3324115916 time_total=4.74s time_compute=4.35s rss_peak=38164.30MB
+2026-01-13 19:57:00,727 INFO k562_memory_bench: Using n_cells=100000 (subsampled)
+2026-01-13 19:57:00,727 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 20:02:14,939 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=100000 seed=383329927 time_total=13.81s time_compute=12.05s rss_peak=42025.44MB
+2026-01-13 20:02:14,941 INFO k562_memory_bench: Benchmarking seed=3324115916
+2026-01-13 20:07:29,883 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=100000 seed=3324115916 time_total=14.57s time_compute=12.96s rss_peak=42025.44MB
+2026-01-13 20:07:30,064 INFO k562_memory_bench: Using n_cells=200000 (subsampled)
+2026-01-13 20:07:30,064 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 20:13:01,906 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=200000 seed=383329927 time_total=31.46s time_compute=28.78s rss_peak=46851.94MB
+2026-01-13 20:13:01,907 INFO k562_memory_bench: Benchmarking seed=3324115916
+2026-01-13 20:18:34,079 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=200000 seed=3324115916 time_total=31.78s time_compute=28.81s rss_peak=46852.20MB
+2026-01-13 20:18:34,080 INFO k562_memory_bench: Using n_cells=1000000 (full)
+2026-01-13 20:18:34,080 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 20:26:26,919 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=1000000 seed=383329927 time_total=172.31s time_compute=165.34s rss_peak=73518.87MB
+2026-01-13 20:26:26,919 INFO k562_memory_bench: Benchmarking seed=3324115916
+2026-01-13 20:33:13,175 INFO k562_memory_bench: Run complete: n_archetypes=2 n_cells=1000000 seed=3324115916 time_total=105.76s time_compute=98.80s rss_peak=73518.88MB
+2026-01-13 20:33:13,177 INFO k562_memory_bench: Benchmarking n_archetypes=3
+2026-01-13 20:33:13,185 INFO k562_memory_bench: Using n_cells=1000 (subsampled)
+2026-01-13 20:33:13,185 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 20:38:15,885 INFO k562_memory_bench: Run complete: n_archetypes=3 n_cells=1000 seed=383329927 time_total=2.24s time_compute=2.18s rss_peak=37198.96MB
+2026-01-13 20:38:15,887 INFO k562_memory_bench: Benchmarking seed=3324115916

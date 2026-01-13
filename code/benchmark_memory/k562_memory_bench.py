@@ -23,6 +23,17 @@ import partipy as pt
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
 from ..utils.data_utils import guess_is_lognorm
 
+# for notebooks:
+#from pathlib import Path
+#import sys
+##repo_root = Path("/home/pschaefer/sds-hd/sd22b002/projects/ParTIpy_paper") # beast
+#repo_root = Path("/mnt/sds-hd/sd22b002/projects/ParTIpy_paper") # helix
+#if str(repo_root) not in sys.path:
+#    sys.path.insert(0, str(repo_root))
+#sys.modules.pop("code", None)
+#from code.utils.data_utils import load_ms_data
+#from code.utils.const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
+
 project_path = Path(".")
 
 ## set up backend for matplotlib: https://matplotlib.org/stable/users/explain/figure/backends.html
@@ -372,13 +383,15 @@ for n_archetypes in n_archetypes_list:
             }
             result_rows.append(result_row)
             logger.info(
-                "Run complete: n_archetypes=%s n_cells=%s seed=%s time_total=%.2fs time_compute=%.2fs rss_peak=%.2fMB",
+                "Run complete: n_archetypes=%s n_cells=%s seed=%s time_total=%.2fs time_compute=%.2fs rss_peak=%.2fMB (start=%.2fMB, delta=%.2fMB)",
                 n_archetypes,
                 n_cells,
                 seed,
                 result["time_total"],
                 result["time_compute"],
                 result["mem_rss_peak_mb"],
+                result["mem_rss_start_mb"],
+                result["mem_rss_peak_over_start_mb"],
             )
 
 result_df = pd.DataFrame(result_rows)

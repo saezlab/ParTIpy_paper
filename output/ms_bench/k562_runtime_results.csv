@@ -1,0 +1,361 @@
+n_archetypes,n_cells,seed,ok,error,time,time_total,time_copy,time_compute
+2,1000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+2,1000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+2,2000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+2,2000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+2,10000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+2,10000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+2,20000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+2,20000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+3,1000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+3,1000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+3,2000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+3,2000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+3,10000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+3,10000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+3,20000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+3,20000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+4,1000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+4,1000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+4,2000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+4,2000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+4,10000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+4,10000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+4,20000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+4,20000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+5,1000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+5,1000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+5,2000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+5,2000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+5,10000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+5,10000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+5,20000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+5,20000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+6,1000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+6,1000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+6,2000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+6,2000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+6,10000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+6,10000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+6,20000,383329927,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,
+6,20000,3324115916,False,"Traceback (most recent call last):
+  File ""/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py"", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File ""/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py"", line 133, in _validate_aa_config
+    raise ValueError(""AA configuration not found in `adata.uns['AA_config']`."")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+",,,,

@@ -48,7 +48,7 @@ if [[ "$FORCE_REINSTALL" == true ]]; then
         echo "'partipy' environment does not exist. No need to remove."
     fi
     echo "Creating 'partipy' environment..."
-    mamba env create -y --name partipy --file=conda_envs/default_env.yaml
+    mamba env create -y --name partipy --file=env.yaml
 else
     echo "Skipping environment reinstallation. Use --force-reinstall to recreate the environment."
 fi

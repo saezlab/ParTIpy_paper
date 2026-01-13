@@ -1,0 +1,451 @@
+2026-01-13 16:18:22,185 INFO k562_runtime_bench: Starting K562 runtime benchmark
+2026-01-13 16:18:22,186 INFO k562_runtime_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 16:18:22,186 INFO k562_runtime_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 16:18:22,186 INFO k562_runtime_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 16:19:00,469 INFO k562_runtime_bench: Loaded data: n_obs=1814089 n_vars=8248
+2026-01-13 16:19:00,739 INFO k562_runtime_bench: Subsampled to n_obs=20000 (max=20000)
+2026-01-13 16:19:00,740 INFO k562_runtime_bench: Running preprocessing: normalize_total, log1p, highly_variable_genes
+2026-01-13 16:19:06,824 INFO k562_runtime_bench: Benchmark settings: n_archetypes=[2, 3, 4, 5, 6]
+2026-01-13 16:19:06,824 INFO k562_runtime_bench: Benchmark settings: n_cells=[1000, 2000, 10000, 20000]
+2026-01-13 16:19:06,824 INFO k562_runtime_bench: Benchmark settings: seeds=[383329927, 3324115916]
+2026-01-13 16:19:06,824 INFO k562_runtime_bench: Benchmarking n_archetypes=2
+2026-01-13 16:19:06,830 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 16:19:06,830 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:06,920 ERROR k562_runtime_bench: Worker error: n_archetypes=2 n_cells=1000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:06,920 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:06,994 ERROR k562_runtime_bench: Worker error: n_archetypes=2 n_cells=1000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:07,003 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 16:19:07,003 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:07,146 ERROR k562_runtime_bench: Worker error: n_archetypes=2 n_cells=2000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:07,147 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:07,252 ERROR k562_runtime_bench: Worker error: n_archetypes=2 n_cells=2000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:07,293 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 16:19:07,293 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:07,500 ERROR k562_runtime_bench: Worker error: n_archetypes=2 n_cells=10000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:07,500 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:07,684 ERROR k562_runtime_bench: Worker error: n_archetypes=2 n_cells=10000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:07,684 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 16:19:07,684 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:07,821 ERROR k562_runtime_bench: Worker error: n_archetypes=2 n_cells=20000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:07,821 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:07,957 ERROR k562_runtime_bench: Worker error: n_archetypes=2 n_cells=20000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:07,957 INFO k562_runtime_bench: Benchmarking n_archetypes=3
+2026-01-13 16:19:07,965 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 16:19:07,965 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:08,040 ERROR k562_runtime_bench: Worker error: n_archetypes=3 n_cells=1000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:08,040 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:08,112 ERROR k562_runtime_bench: Worker error: n_archetypes=3 n_cells=1000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:08,121 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 16:19:08,121 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:08,227 ERROR k562_runtime_bench: Worker error: n_archetypes=3 n_cells=2000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:08,227 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:08,333 ERROR k562_runtime_bench: Worker error: n_archetypes=3 n_cells=2000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:08,353 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 16:19:08,353 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:08,538 ERROR k562_runtime_bench: Worker error: n_archetypes=3 n_cells=10000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:08,538 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:08,723 ERROR k562_runtime_bench: Worker error: n_archetypes=3 n_cells=10000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:08,723 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 16:19:08,723 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:08,860 ERROR k562_runtime_bench: Worker error: n_archetypes=3 n_cells=20000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:08,860 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:08,995 ERROR k562_runtime_bench: Worker error: n_archetypes=3 n_cells=20000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:08,996 INFO k562_runtime_bench: Benchmarking n_archetypes=4
+2026-01-13 16:19:09,107 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 16:19:09,107 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:09,182 ERROR k562_runtime_bench: Worker error: n_archetypes=4 n_cells=1000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:09,183 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:09,257 ERROR k562_runtime_bench: Worker error: n_archetypes=4 n_cells=1000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:09,267 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 16:19:09,267 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:09,372 ERROR k562_runtime_bench: Worker error: n_archetypes=4 n_cells=2000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:09,372 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:09,478 ERROR k562_runtime_bench: Worker error: n_archetypes=4 n_cells=2000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:09,497 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 16:19:09,497 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:09,680 ERROR k562_runtime_bench: Worker error: n_archetypes=4 n_cells=10000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:09,680 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:09,865 ERROR k562_runtime_bench: Worker error: n_archetypes=4 n_cells=10000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:09,866 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 16:19:09,866 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:10,002 ERROR k562_runtime_bench: Worker error: n_archetypes=4 n_cells=20000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:10,002 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:10,135 ERROR k562_runtime_bench: Worker error: n_archetypes=4 n_cells=20000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:10,136 INFO k562_runtime_bench: Benchmarking n_archetypes=5
+2026-01-13 16:19:10,143 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 16:19:10,143 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:10,217 ERROR k562_runtime_bench: Worker error: n_archetypes=5 n_cells=1000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:10,218 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:10,292 ERROR k562_runtime_bench: Worker error: n_archetypes=5 n_cells=1000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:10,301 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 16:19:10,301 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:10,406 ERROR k562_runtime_bench: Worker error: n_archetypes=5 n_cells=2000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:10,407 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:10,513 ERROR k562_runtime_bench: Worker error: n_archetypes=5 n_cells=2000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:10,532 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 16:19:10,533 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:10,718 ERROR k562_runtime_bench: Worker error: n_archetypes=5 n_cells=10000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:10,718 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:10,904 ERROR k562_runtime_bench: Worker error: n_archetypes=5 n_cells=10000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:10,904 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 16:19:10,904 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:11,040 ERROR k562_runtime_bench: Worker error: n_archetypes=5 n_cells=20000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:11,040 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:11,177 ERROR k562_runtime_bench: Worker error: n_archetypes=5 n_cells=20000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:11,178 INFO k562_runtime_bench: Benchmarking n_archetypes=6
+2026-01-13 16:19:11,185 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 16:19:11,185 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:11,261 ERROR k562_runtime_bench: Worker error: n_archetypes=6 n_cells=1000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:11,261 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:11,336 ERROR k562_runtime_bench: Worker error: n_archetypes=6 n_cells=1000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:11,346 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 16:19:11,346 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:11,451 ERROR k562_runtime_bench: Worker error: n_archetypes=6 n_cells=2000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:11,451 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:11,561 ERROR k562_runtime_bench: Worker error: n_archetypes=6 n_cells=2000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:11,581 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 16:19:11,581 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:11,766 ERROR k562_runtime_bench: Worker error: n_archetypes=6 n_cells=10000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:11,766 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:11,952 ERROR k562_runtime_bench: Worker error: n_archetypes=6 n_cells=10000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:11,953 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 16:19:11,953 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:19:12,091 ERROR k562_runtime_bench: Worker error: n_archetypes=6 n_cells=20000 seed=383329927 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:12,091 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:19:12,228 ERROR k562_runtime_bench: Worker error: n_archetypes=6 n_cells=20000 seed=3324115916 error=Traceback (most recent call last):
+  File "/mnt/sds-hd/sd22b002/projects/ParTIpy_paper/code/benchmark_memory/k562_runtime_bench.py", line 47, in _benchmark_worker
+    pt.compute_archetypes(
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 1137, in compute_archetypes
+    _validate_aa_config(adata=adata)
+  File "/home/hd/hd_hd/hd_ww259/miniforge3/envs/partipy/lib/python3.11/site-packages/partipy/paretoti.py", line 133, in _validate_aa_config
+    raise ValueError("AA configuration not found in `adata.uns['AA_config']`.")
+ValueError: AA configuration not found in `adata.uns['AA_config']`.
+
+2026-01-13 16:19:12,233 INFO k562_runtime_bench: Wrote results to /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench/k562_runtime_results.csv
+2026-01-13 16:21:44,052 INFO k562_runtime_bench: Starting K562 runtime benchmark
+2026-01-13 16:21:44,053 INFO k562_runtime_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 16:21:44,053 INFO k562_runtime_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 16:21:44,053 INFO k562_runtime_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 16:22:21,337 INFO k562_runtime_bench: Loaded data: n_obs=1814089 n_vars=8248
+2026-01-13 16:22:21,609 INFO k562_runtime_bench: Subsampled to n_obs=20000 (max=20000)
+2026-01-13 16:22:21,609 INFO k562_runtime_bench: Running preprocessing: normalize_total, log1p, highly_variable_genes
+2026-01-13 16:22:27,522 INFO k562_runtime_bench: Benchmark settings: n_archetypes=[2, 3, 4, 5, 6]
+2026-01-13 16:22:27,522 INFO k562_runtime_bench: Benchmark settings: n_cells=[1000, 2000, 10000, 20000]
+2026-01-13 16:22:27,523 INFO k562_runtime_bench: Benchmark settings: seeds=[383329927, 3324115916]
+2026-01-13 16:22:27,523 INFO k562_runtime_bench: Benchmarking n_archetypes=2
+2026-01-13 16:22:27,528 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 16:22:27,528 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:27:37,943 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=1000 seed=383329927 time_total=9.86s time_compute=9.81s
+2026-01-13 16:27:37,956 INFO k562_runtime_bench: Benchmarking seed=3324115916

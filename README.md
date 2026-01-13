@@ -10,10 +10,10 @@ For additional examples and applications of Archetypal Analysis and Pareto Task 
 
 ## Installation
 
-We recommend installing dependencies with **conda** or **mamba**.  
+We recommend installing dependencies with **mamba** or **mamba**.  
 
 ```bash
-conda env create -n partipy -f env.yaml
+mamba env create -n partipy -f env.yaml
 ```
 
 This will install all required packages, including [ParTIpy](https://github.com/saezlab/ParTIpy)
@@ -27,7 +27,7 @@ Benchmark and example datasets are downloaded automatically when running the ben
 ### Initialization & Optimization Algorithms
 
 ```bash
-conda activate partipy
+mamba activate partipy
 
 python -m code.benchmark_algorithms.ms_bench
 python -m code.benchmark_algorithms.ms_xenium_bench
@@ -38,7 +38,7 @@ python -m code.benchmark_algorithms.bench_meta
 ### Coresets
 
 ```bash
-conda activate partipy
+mamba activate partipy
 
 python -m code.benchmark_coresets.ms_coreset
 python -m code.benchmark_coresets.ms_xenium_coreset
@@ -46,12 +46,20 @@ python -m code.benchmark_coresets.lupus_coreset
 python -m code.benchmark_coresets.coreset_meta
 ```
 
+### Memory
+
+```bash
+mamba activate partipy
+
+python -m code.benchmark_memory.k562_memory_bench.py
+```
+
 ## Examples
 
 ### Simulated Data
 
 ```bash
-conda activate partipy
+mamba activate partipy
 
 python -m code.benchmark_algorithms.simulated_data
 ```
@@ -59,7 +67,7 @@ python -m code.benchmark_algorithms.simulated_data
 ### Hepatocyte Example
 
 ```bash
-conda activate partipy
+mamba activate partipy
 
 python -m code.examples.hepatocyte_example
 ```
@@ -67,7 +75,7 @@ python -m code.examples.hepatocyte_example
 ### Additional Scripts
 
 ```bash
-conda activate partipy
+mamba activate partipy
 
 python -m code.examples.overview_figure
 python -m code.examples.delta_visualization

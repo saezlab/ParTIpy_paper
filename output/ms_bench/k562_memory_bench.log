@@ -1,0 +1,34 @@
+2026-01-13 15:18:39,545 INFO k562_memory_bench: Starting K562 memory benchmark
+2026-01-13 15:18:39,546 INFO k562_memory_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 15:18:39,546 INFO k562_memory_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 15:18:39,546 INFO k562_memory_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 15:26:24,345 INFO k562_memory_bench: Starting K562 memory benchmark
+2026-01-13 15:26:24,346 INFO k562_memory_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 15:26:24,346 INFO k562_memory_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 15:26:24,350 INFO k562_memory_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 15:45:31,486 INFO k562_memory_bench: Starting K562 memory benchmark
+2026-01-13 15:45:31,486 INFO k562_memory_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 15:45:31,487 INFO k562_memory_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 15:45:31,487 INFO k562_memory_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 15:46:07,637 INFO k562_memory_bench: Loaded data: n_obs=1814089 n_vars=8248
+2026-01-13 15:54:38,942 INFO k562_memory_bench: Starting K562 memory benchmark
+2026-01-13 15:54:38,943 INFO k562_memory_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 15:54:38,943 INFO k562_memory_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 15:54:38,943 INFO k562_memory_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 15:55:14,552 INFO k562_memory_bench: Loaded data: n_obs=1814089 n_vars=8248
+2026-01-13 15:55:14,848 INFO k562_memory_bench: Subsampled to n_obs=20000 (max=20000)
+2026-01-13 15:55:14,849 INFO k562_memory_bench: Running preprocessing: normalize_total, log1p, highly_variable_genes
+2026-01-13 15:55:24,079 INFO k562_memory_bench: Benchmark settings: n_archetypes=[2, 3, 4, 5, 6]
+2026-01-13 15:55:24,079 INFO k562_memory_bench: Benchmark settings: n_cells=[1000, 2000, 10000, 20000]
+2026-01-13 15:55:24,079 INFO k562_memory_bench: Benchmark settings: seeds=[383329927, 3324115916]
+2026-01-13 15:55:24,079 INFO k562_memory_bench: Benchmarking n_archetypes=2
+2026-01-13 15:55:24,086 INFO k562_memory_bench: Using n_cells=1000 (subsampled)
+2026-01-13 16:23:01,334 INFO k562_memory_bench: Starting K562 memory benchmark
+2026-01-13 16:23:01,334 INFO k562_memory_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 16:23:01,335 INFO k562_memory_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 16:23:01,335 INFO k562_memory_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 16:23:39,498 INFO k562_memory_bench: Loaded data: n_obs=1814089 n_vars=8248
+2026-01-13 16:30:29,103 INFO k562_memory_bench: Starting K562 memory benchmark
+2026-01-13 16:30:29,104 INFO k562_memory_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 16:30:29,104 INFO k562_memory_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 16:30:29,104 INFO k562_memory_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad

@@ -3,13 +3,19 @@ import tarfile
 import zipfile
 import hashlib
 from pathlib import Path
+import logging
 
 import requests
 import scanpy as sc
 import numpy as np
 import pandas as pd
 
+import anndata as ad
+from scipy.sparse import issparse
+
 from .const import DATA_PATH, EXPECTED_CHECKSUMS
+
+logger = logging.getLogger(__name__)
 
 
 def compute_partial_sha256(file_path: Path, chunk_size=20 * 1024 * 1024) -> str:
@@ -20,7 +26,7 @@ def compute_partial_sha256(file_path: Path, chunk_size=20 * 1024 * 1024) -> str:
     with open(file_path, "rb") as f:
         # Read start
         sha256.update(f.read(chunk_size))
-        
+
         # Read end
         if file_size > chunk_size:
             f.seek(-chunk_size, os.SEEK_END)
@@ -34,7 +40,9 @@ def file_needs_download(file_path: Path, expected_hash: str) -> bool:
         return True
     actual_hash = compute_partial_sha256(file_path)
     if actual_hash != expected_hash:
-        print(f"Checksum mismatch for {file_path.name}: expected {expected_hash}, got {actual_hash}")
+        print(
+            f"Checksum mismatch for {file_path.name}: expected {expected_hash}, got {actual_hash}"
+        )
         return True
     return False
 
@@ -47,15 +55,18 @@ def load_ms_data(use_cache: bool = True, data_dir=Path(".") / DATA_PATH):
     filename = data_dir / os.path.basename(url)
 
     # Download file if it does not already exist
-    if file_needs_download(filename, EXPECTED_CHECKSUMS["sn_atlas.h5ad"]) or not use_cache:
+    if (
+        file_needs_download(filename, EXPECTED_CHECKSUMS["sn_atlas.h5ad"])
+        or not use_cache
+    ):
         print(f"Downloading sn_atlas.h5ad to {filename}...")
         response = requests.get(url, stream=True)
         response.raise_for_status()
-        
+
         with open(filename, "wb") as file:
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
-        
+
         print(f"Downloaded: {filename}")
     else:
         print(f"File already exists, skipping: {filename}")
@@ -66,7 +77,10 @@ def load_ms_data(use_cache: bool = True, data_dir=Path(".") / DATA_PATH):
     output_dir = data_dir / "GSE279183_extracted"
 
     # Download second file only if it does not already exist
-    if file_needs_download(output_tar, EXPECTED_CHECKSUMS["GSE279183_RAW.tar"]) or not use_cache:
+    if (
+        file_needs_download(output_tar, EXPECTED_CHECKSUMS["GSE279183_RAW.tar"])
+        or not use_cache
+    ):
         print(f"Downloading GSE279183_RAW.tar to {output_tar}...")
         response = requests.get(geo_url, stream=True)
         if response.status_code == 200:
@@ -92,26 +106,39 @@ def load_ms_data(use_cache: bool = True, data_dir=Path(".") / DATA_PATH):
         print(f"Extraction directory already exists, skipping: {output_dir}")
 
     # get the gene info
-    sn_atlas_var_info = pd.read_csv(output_dir/ "GSM8563681_CO37_features.tsv.gz", sep="\t", names=["gene_ids", "gene_name", "gene_type"])
+    sn_atlas_var_info = pd.read_csv(
+        output_dir / "GSM8563681_CO37_features.tsv.gz",
+        sep="\t",
+        names=["gene_ids", "gene_name", "gene_type"],
+    )
 
-    one_to_many_genes = (sn_atlas_var_info
-                        .value_counts("gene_name")
-                        .reset_index()
-                        .query("count > 1")["gene_name"]
-                        .to_list())
+    one_to_many_genes = (
+        sn_atlas_var_info.value_counts("gene_name")
+        .reset_index()
+        .query("count > 1")["gene_name"]
+        .to_list()
+    )
 
-    unique_gene_ids_remove = (sn_atlas_var_info.
-                            loc[sn_atlas_var_info["gene_name"].isin(one_to_many_genes), :]
-                            .groupby("gene_name")
-                            .last()
-                            .reset_index())
+    unique_gene_ids_remove = (
+        sn_atlas_var_info.loc[sn_atlas_var_info["gene_name"].isin(one_to_many_genes), :]
+        .groupby("gene_name")
+        .last()
+        .reset_index()
+    )
 
-    sn_atlas_var_info = sn_atlas_var_info.loc[~sn_atlas_var_info["gene_ids"].isin(unique_gene_ids_remove["gene_ids"].to_list()), :]
+    sn_atlas_var_info = sn_atlas_var_info.loc[
+        ~sn_atlas_var_info["gene_ids"].isin(
+            unique_gene_ids_remove["gene_ids"].to_list()
+        ),
+        :,
+    ]
 
     # finally read the atlas
     sn_atlas = sc.read(data_dir / "sn_atlas.h5ad")
     sn_atlas.var["gene_name"] = sn_atlas.var.index.to_list().copy()
-    sn_atlas.var = sn_atlas.var.join(sn_atlas_var_info.set_index("gene_name"), how="left")
+    sn_atlas.var = sn_atlas.var.join(
+        sn_atlas_var_info.set_index("gene_name"), how="left"
+    )
     sn_atlas.obs = sn_atlas.obs.reset_index(names="cell_id").set_index("cell_id")
     sn_atlas.var = sn_atlas.var.reset_index().set_index("gene_ids")
     sn_atlas.X = sn_atlas.X.astype(np.int32)
@@ -124,7 +151,7 @@ def load_hepatocyte_data(use_cache: bool = True):
 
     file_urls = {
         "design": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE84nnn/GSE84498/suppl/GSE84498%5Fexperimental%5Fdesign.txt.gz",
-        "counts": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE84nnn/GSE84498/suppl/GSE84498%5Fumitab.txt.gz"
+        "counts": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE84nnn/GSE84498/suppl/GSE84498%5Fumitab.txt.gz",
     }
 
     file_paths = {}
@@ -145,16 +172,17 @@ def load_hepatocyte_data(use_cache: bool = True):
 
     # Read metadata and count matrix
     obs = pd.read_csv(file_paths["design"], sep="\t").set_index("well")
-    count_df = (pd.read_csv(file_paths["counts"], sep="\t")
-                  .set_index("gene")
-                  .T
-                  .loc[obs.index, :])
+    count_df = (
+        pd.read_csv(file_paths["counts"], sep="\t")
+        .set_index("gene")
+        .T.loc[obs.index, :]
+    )
 
     # Construct AnnData
     adata = sc.AnnData(
         X=count_df.values.astype(np.float32),
         obs=obs,
-        var=pd.DataFrame(index=[c.split(";")[0] for c in count_df.columns])
+        var=pd.DataFrame(index=[c.split(";")[0] for c in count_df.columns]),
     )
 
     # Filter lowly expressed genes
@@ -178,11 +206,10 @@ def load_hepatocyte_data_2(use_cache=True, data_dir=Path(".") / DATA_PATH):
         "counts": {
             "filename": "hepatocyte_counts.txt",
             "url": "https://zenodo.org/records/6035873/files/Single_cell_UMI_COUNT.txt?download=1",
-        }
+        },
     }
 
     for file_dict in file_dicts.values():
-
         filepath = data_dir / file_dict["filename"]
         url = file_dict["url"]
 
@@ -196,15 +223,22 @@ def load_hepatocyte_data_2(use_cache=True, data_dir=Path(".") / DATA_PATH):
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
             print(f"Downloaded: {filepath}")
-    count_tmp = pd.read_csv(data_dir / file_dicts["counts"]["filename"]).set_index("Gene_Name")
+    count_tmp = pd.read_csv(data_dir / file_dicts["counts"]["filename"]).set_index(
+        "Gene_Name"
+    )
     meta_tmp = pd.read_csv(data_dir / file_dicts["metadata"]["filename"])
-    meta_tmp = (meta_tmp.loc[meta_tmp["Cell_barcode"].isin(count_tmp.columns.to_list())]
-                .set_index("Cell_barcode"))
-    adata = sc.AnnData(X=count_tmp.values.copy().T.astype(np.float32),
-                    var=pd.DataFrame(index=count_tmp.index.copy()),
-                    obs=meta_tmp.loc[count_tmp.columns.to_numpy(), :].copy())
+    meta_tmp = meta_tmp.loc[
+        meta_tmp["Cell_barcode"].isin(count_tmp.columns.to_list())
+    ].set_index("Cell_barcode")
+    adata = sc.AnnData(
+        X=count_tmp.values.copy().T.astype(np.float32),
+        var=pd.DataFrame(index=count_tmp.index.copy()),
+        obs=meta_tmp.loc[count_tmp.columns.to_numpy(), :].copy(),
+    )
     del count_tmp, meta_tmp
-    adata = adata[(adata.obs["time_point"] == 0) & (adata.obs["cell_type"] == "Hep"), :].copy()
+    adata = adata[
+        (adata.obs["time_point"] == 0) & (adata.obs["cell_type"] == "Hep"), :
+    ].copy()
     adata = adata[:, adata.X.sum(axis=0) > 0].copy()
     return adata
 
@@ -215,7 +249,7 @@ def load_ms_xenium_data(use_cache=True, data_dir=Path(".") / DATA_PATH):
 
     zip_filename = "MS_xenium_data_v5_with_images_tmap.h5ad.zip"
     h5ad_filename = "MS_xenium_data_v5_with_images_tmap.h5ad"
-    
+
     zip_path = data_dir / zip_filename
     file_path = data_dir / h5ad_filename
     url = "https://zenodo.org/records/8037425/files/MS_xenium_data_v5_with_images_tmap.h5ad.zip?download=1"
@@ -233,7 +267,10 @@ def load_ms_xenium_data(use_cache=True, data_dir=Path(".") / DATA_PATH):
         print(f"Zip file already exists: {zip_path}")
 
     # Extract if H5AD missing or invalid
-    if file_needs_download(file_path, EXPECTED_CHECKSUMS[h5ad_filename]) or not use_cache:
+    if (
+        file_needs_download(file_path, EXPECTED_CHECKSUMS[h5ad_filename])
+        or not use_cache
+    ):
         print(f"Extracting {zip_path}...")
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(data_dir)
@@ -258,35 +295,49 @@ def load_lupus_data(use_cache=True, data_dir=Path(".") / DATA_PATH):
     if file_needs_download(file_path, EXPECTED_CHECKSUMS[file_name]) or not use_cache:
         response = requests.get(url, stream=True)
         response.raise_for_status()
-        
+
         with open(file_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
-        
+
         print(f"Downloaded: {file_path}")
     else:
         print(f"File already exists, skipping: {file_path}")
 
     adata = sc.read_h5ad(file_path)
-    adata.obs["Status"] = adata.obs["disease_state"].map({
-        "managed": "Managed",
-        "na": "Healthy",
-        "flare": "Flare",
-        "treated": "Treated"
-    })
-    #adata = adata[adata.obs["author_cell_type"]=="ncM", :].copy() # only consider non-classical monocytes
-    #adata = adata[adata.obs["Status"] != "Treated", :].copy() # remove samples with "treated" status
+    adata.obs["Status"] = adata.obs["disease_state"].map(
+        {"managed": "Managed", "na": "Healthy", "flare": "Flare", "treated": "Treated"}
+    )
+    # adata = adata[adata.obs["author_cell_type"]=="ncM", :].copy() # only consider non-classical monocytes
+    # adata = adata[adata.obs["Status"] != "Treated", :].copy() # remove samples with "treated" status
     # remove columns we don"t need
-    adata.obs.drop(columns=["mapped_reference_annotation", "cell_type_ontology_term_id", "is_primary_data", 
-                            "cell_state", "tissue_ontology_term_id", "development_stage_ontology_term_id", 
-                            "tissue", "organism", "tissue_type", "suspension_type", "organism_ontology_term_id",
-                            "assay_ontology_term_id", "suspension_enriched_cell_types", "suspension_uuid",
-                            "self_reported_ethnicity_ontology_term_id", "disease_ontology_term_id",
-                            "sex_ontology_term_id"], 
-                            inplace=True)
+    adata.obs.drop(
+        columns=[
+            "mapped_reference_annotation",
+            "cell_type_ontology_term_id",
+            "is_primary_data",
+            "cell_state",
+            "tissue_ontology_term_id",
+            "development_stage_ontology_term_id",
+            "tissue",
+            "organism",
+            "tissue_type",
+            "suspension_type",
+            "organism_ontology_term_id",
+            "assay_ontology_term_id",
+            "suspension_enriched_cell_types",
+            "suspension_uuid",
+            "self_reported_ethnicity_ontology_term_id",
+            "disease_ontology_term_id",
+            "sex_ontology_term_id",
+        ],
+        inplace=True,
+    )
     # create new index
-    adata.obs.index = [s.split("-")[0] + "-" + str(len(s.split("-"))) + "-" + str(donor_id) 
-                    for s, donor_id in zip(adata.obs.index, adata.obs["donor_id"].to_list())]
+    adata.obs.index = [
+        s.split("-")[0] + "-" + str(len(s.split("-"))) + "-" + str(donor_id)
+        for s, donor_id in zip(adata.obs.index, adata.obs["donor_id"].to_list())
+    ]
     # remove obsm we don't need
     del adata.obsm["X_pca"], adata.obsm["X_umap"], adata.uns
     gc.collect()
@@ -302,6 +353,73 @@ def load_lupus_data(use_cache=True, data_dir=Path(".") / DATA_PATH):
     adata = adata[:, adata.X.sum(axis=0) >= 20].copy()
 
     # remove processing cohort 4.0
-    adata = adata[adata.obs["Processing_Cohort"]!="4.0", :].copy() # remove processing cohort 4.0
+    adata = adata[
+        adata.obs["Processing_Cohort"] != "4.0", :
+    ].copy()  # remove processing cohort 4.0
 
     return adata
+
+
+def guess_is_lognorm(
+    adata: ad.AnnData,
+    epsilon: float = 1e-3,
+    max_threshold: float = 15.0,
+    validate: bool = True,
+) -> bool:
+    """
+    Guess whether `adata.X` contains raw integer counts (False) or log1p-normalized values (True).
+
+    Heuristic:
+      1) Detect fractional entries: frac(x) > epsilon.
+      2) If none -> assume raw counts.
+      3) If present -> require min >= 0; optionally enforce max < max_threshold.
+
+    Raises:
+      ValueError if `adata.X` is None, if min < 0, or if validate=True and max >= max_threshold.
+    """
+    X = adata.X
+    if X is None:
+        raise ValueError("adata.X is None")
+
+    # Fractional-value check (avoid densifying sparse)
+    if issparse(X):
+        frac = np.modf(X.data)[0]
+        has_decimals = bool(np.any(frac > epsilon))
+    else:
+        X_arr = np.asarray(X)
+        frac = np.modf(X_arr)[0]
+        has_decimals = bool(np.any(frac > epsilon))
+
+    if not has_decimals:
+        logger.info("Data appears to be integer counts (no decimal values detected)")
+        return False
+
+    # Range check
+    if issparse(X):
+        min_val = float(X.min())
+        max_val = float(X.max())
+    else:
+        # Reuse X_arr if already materialized above
+        X_arr = np.asarray(X)
+        min_val = float(np.min(X_arr))
+        max_val = float(np.max(X_arr))
+
+    if min_val < 0:
+        raise ValueError(
+            f"Invalid scale: min value {min_val:.2f} is negative. "
+            "Both natural counts and log1p-normalized data must have all values >= 0."
+        )
+
+    if validate and max_val >= max_threshold:
+        raise ValueError(
+            f"Invalid scale: max value {max_val:.2f} exceeds log1p threshold of {max_threshold}. "
+            f"Expected log1p normalized values in range [0, {max_threshold}), but found values suggesting "
+            "raw counts or incorrect normalization. Values above the threshold can indicate mixed scales."
+        )
+
+    logger.info(
+        "Data appears to be log1p normalized (decimals detected, range [%.2f, %.2f])",
+        min_val,
+        max_val,
+    )
+    return True

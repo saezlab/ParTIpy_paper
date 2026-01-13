@@ -15,8 +15,26 @@ from statsmodels.genmod.families import Gaussian
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
+# replacement code when running notebook for debugging
+# from pathlib import Path
+# import sys
+# repo_root = Path("/home/pschaefer/sds-hd/sd22b002/projects/ParTIpy_paper")
+# if str(repo_root) not in sys.path:
+#    sys.path.insert(0, str(repo_root))
+# sys.modules.pop("code", None)
+# from code.utils.data_utils import load_ms_data
+# from code.utils.const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
+# def get_minimal_value_key(dict_input):
+#    return int(
+#        np.array(list(dict_input.keys()))[
+#            np.argmin(np.array(list(dict_input.values())))
+#        ]
+#    )
+
+
 from ..utils.data_utils import load_ms_data
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, SEED_DICT
+
 
 ## define helper function
 def get_minimal_value_key(dict_input):
@@ -26,8 +44,10 @@ def get_minimal_value_key(dict_input):
         ]
     )
 
+
 def pearsonr_per_row(mtx_1: np.ndarray, mtx_2: np.ndarray, return_pval: bool = False):
     from scipy.stats import pearsonr
+
     assert mtx_1.shape == mtx_2.shape
     corr_list = []
     pval_list = []
@@ -39,6 +59,7 @@ def pearsonr_per_row(mtx_1: np.ndarray, mtx_2: np.ndarray, return_pval: bool = F
         return np.array(corr_list), np.array(pval_list)
     else:
         return np.array(corr_list)
+
 
 ## set up backend for matplotlib: https://matplotlib.org/stable/users/explain/figure/backends.html
 matplotlib.use("Agg")
@@ -211,7 +232,7 @@ for celltype in celltype_labels:
             seed_min = get_minimal_value_key(euclidean_distances)
             pearson_corr_per_matched_arch = pearsonr_per_row(
                 reference_archetype_char_gex_dict[seed_min].to_numpy(),
-                archetype_expression.iloc[query_idx_dict[seed_min], :].to_numpy()
+                archetype_expression.iloc[query_idx_dict[seed_min], :].to_numpy(),
             )
 
             Z = adata_ref.uns["AA_results"]["Z"].copy()

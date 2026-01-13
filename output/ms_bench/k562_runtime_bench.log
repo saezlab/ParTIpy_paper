@@ -449,3 +449,104 @@ ValueError: AA configuration not found in `adata.uns['AA_config']`.
 2026-01-13 16:22:27,528 INFO k562_runtime_bench: Benchmarking seed=383329927
 2026-01-13 16:27:37,943 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=1000 seed=383329927 time_total=9.86s time_compute=9.81s
 2026-01-13 16:27:37,956 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:32:41,755 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=1000 seed=3324115916 time_total=3.33s time_compute=3.29s
+2026-01-13 16:32:41,765 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 16:32:41,765 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:37:44,412 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=2000 seed=383329927 time_total=2.22s time_compute=2.10s
+2026-01-13 16:37:44,413 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:42:47,063 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=2000 seed=3324115916 time_total=2.21s time_compute=2.14s
+2026-01-13 16:42:47,083 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 16:42:47,083 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:47:50,502 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=10000 seed=383329927 time_total=2.95s time_compute=2.80s
+2026-01-13 16:47:50,502 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 16:52:54,343 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=10000 seed=3324115916 time_total=3.36s time_compute=3.20s
+2026-01-13 16:52:54,343 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 16:52:54,343 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 16:57:58,947 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=20000 seed=383329927 time_total=4.24s time_compute=4.15s
+2026-01-13 16:57:58,948 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:03:03,901 INFO k562_runtime_bench: Run complete: n_archetypes=2 n_cells=20000 seed=3324115916 time_total=4.59s time_compute=4.49s
+2026-01-13 17:03:03,902 INFO k562_runtime_bench: Benchmarking n_archetypes=3
+2026-01-13 17:03:03,909 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 17:03:03,910 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:08:06,585 INFO k562_runtime_bench: Run complete: n_archetypes=3 n_cells=1000 seed=383329927 time_total=2.13s time_compute=2.06s
+2026-01-13 17:08:06,585 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:13:09,166 INFO k562_runtime_bench: Run complete: n_archetypes=3 n_cells=1000 seed=3324115916 time_total=2.11s time_compute=2.08s
+2026-01-13 17:13:09,176 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 17:13:09,187 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:18:11,954 INFO k562_runtime_bench: Run complete: n_archetypes=3 n_cells=2000 seed=383329927 time_total=2.29s time_compute=2.22s
+2026-01-13 17:18:11,955 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:30:16,548 INFO k562_runtime_bench: Starting K562 runtime benchmark
+2026-01-13 17:30:16,556 INFO k562_runtime_bench: Output dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/output/ms_bench
+2026-01-13 17:30:16,556 INFO k562_runtime_bench: Figure dir: /mnt/sds-hd/sd22b002/projects/ParTIpy_paper/figures/ms_bench
+2026-01-13 17:30:16,556 INFO k562_runtime_bench: Reading data: ../gpp_bench/data/prc/replogle2022_k562_gwps/replogle2022_k562_gwps_adata.h5ad
+2026-01-13 17:30:54,756 INFO k562_runtime_bench: Loaded data: n_obs=1814089 n_vars=8248
+2026-01-13 17:30:55,035 INFO k562_runtime_bench: Subsampled to n_obs=20000 (max=20000)
+2026-01-13 17:30:55,036 INFO k562_runtime_bench: Running preprocessing: normalize_total, log1p, highly_variable_genes
+2026-01-13 17:31:00,963 INFO k562_runtime_bench: Benchmark settings: n_archetypes=[2, 3, 4, 5, 6]
+2026-01-13 17:31:00,964 INFO k562_runtime_bench: Benchmark settings: n_cells=[1000, 2000, 10000, 20000]
+2026-01-13 17:31:00,964 INFO k562_runtime_bench: Benchmark settings: seeds=[383329927, 3324115916]
+2026-01-13 17:31:00,964 INFO k562_runtime_bench: Benchmarking n_archetypes=2
+2026-01-13 17:31:00,970 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 17:31:00,970 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:03,765 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:05,656 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 17:31:05,656 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:07,729 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:09,737 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 17:31:09,737 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:12,820 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:15,868 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 17:31:15,868 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:19,885 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:23,881 INFO k562_runtime_bench: Benchmarking n_archetypes=3
+2026-01-13 17:31:23,888 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 17:31:23,888 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:25,827 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:27,767 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 17:31:27,767 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:29,839 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:32,014 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 17:31:32,014 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:35,534 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:39,026 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 17:31:39,026 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:44,335 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:49,645 INFO k562_runtime_bench: Benchmarking n_archetypes=4
+2026-01-13 17:31:49,652 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 17:31:49,653 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:49,856 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:50,069 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 17:31:50,070 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:50,438 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:50,811 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 17:31:50,811 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:52,823 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:31:54,827 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 17:31:54,827 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:31:59,586 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:32:04,352 INFO k562_runtime_bench: Benchmarking n_archetypes=5
+2026-01-13 17:32:04,359 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 17:32:04,359 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:32:04,553 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:32:04,747 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 17:32:04,747 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:32:05,217 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:32:05,640 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 17:32:05,640 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:32:07,960 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:32:10,255 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 17:32:10,255 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:32:14,386 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:32:18,503 INFO k562_runtime_bench: Benchmarking n_archetypes=6
+2026-01-13 17:32:18,509 INFO k562_runtime_bench: Using n_cells=1000 (subsampled)
+2026-01-13 17:32:18,509 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:32:18,688 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:32:18,872 INFO k562_runtime_bench: Using n_cells=2000 (subsampled)
+2026-01-13 17:32:18,872 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:32:19,336 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:32:19,811 INFO k562_runtime_bench: Using n_cells=10000 (subsampled)
+2026-01-13 17:32:19,811 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:32:22,759 INFO k562_runtime_bench: Benchmarking seed=3324115916
+2026-01-13 17:32:25,703 INFO k562_runtime_bench: Using n_cells=20000 (full)
+2026-01-13 17:32:25,703 INFO k562_runtime_bench: Benchmarking seed=383329927
+2026-01-13 17:32:30,283 INFO k562_runtime_bench: Benchmarking seed=3324115916

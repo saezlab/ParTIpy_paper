@@ -1,7 +1,5 @@
 from pathlib import Path
 import multiprocessing as mp
-import os
-import resource
 import time
 import pickle
 import traceback
@@ -28,24 +26,12 @@ figure_dir.mkdir(exist_ok=True, parents=True)
 output_dir = Path(OUTPUT_PATH) / "lupus_bench"
 output_dir.mkdir(exist_ok=True, parents=True)
 
-def get_rss_mb():
-    """Current resident set size (RSS) in MB (Linux /proc)."""
-    with open("/proc/self/statm", "r", encoding="utf-8") as handle:
-        rss_pages = int(handle.read().split()[1])
-    return rss_pages * os.sysconf("SC_PAGE_SIZE") / (1024 ** 2)
-
-def get_peak_rss_mb():
-    """Peak RSS in MB since process start (Linux ru_maxrss in KB)."""
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
-
 _MP_ADATA = None
 
 def _benchmark_worker(result_queue, optim_dict, seed, n_archetypes):
     try:
         adata_bench = _MP_ADATA.copy()
 
-        rss_start_mb = get_rss_mb()
-        peak_start_mb = get_peak_rss_mb()
         start_time = time.time()
 
         pt.compute_archetypes(
@@ -62,18 +48,11 @@ def _benchmark_worker(result_queue, optim_dict, seed, n_archetypes):
         )
 
         end_time = time.time()
-        rss_end_mb = get_rss_mb()
-        peak_end_mb = get_peak_rss_mb()
 
         result_queue.put(
             {
                 "ok": True,
                 "time": end_time - start_time,
-                "mem_rss_start_mb": rss_start_mb,
-                "mem_rss_end_mb": rss_end_mb,
-                "mem_rss_delta_mb": rss_end_mb - rss_start_mb,
-                "mem_rss_peak_mb": peak_end_mb,
-                "mem_rss_peak_delta_mb": peak_end_mb - peak_start_mb,
                 "rss_trace": adata_bench.uns["AA_results"]["RSS"],
                 "rss": adata_bench.uns["AA_results"]["RSS"][-1],
                 "varexpl": adata_bench.uns["AA_results"]["varexpl"],
@@ -233,11 +212,6 @@ for celltype in celltype_labels:
             result_dict = {
                 "celltype": celltype,
                 "time": execution_time,
-                "mem_rss_start_mb": result["mem_rss_start_mb"],
-                "mem_rss_end_mb": result["mem_rss_end_mb"],
-                "mem_rss_delta_mb": result["mem_rss_delta_mb"],
-                "mem_rss_peak_mb": result["mem_rss_peak_mb"],
-                "mem_rss_peak_delta_mb": result["mem_rss_peak_delta_mb"],
                 "rss": result["rss"],
                 "varexpl": result["varexpl"],
                 "seed": seed,

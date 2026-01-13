@@ -1,8 +1,6 @@
 from pathlib import Path
 import logging
-import multiprocessing as mp
 import os
-import queue
 import sys
 import time
 import traceback
@@ -13,7 +11,6 @@ os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
 
 import matplotlib
-import pandas as pd
 import scanpy as sc
 import numpy as np
 import partipy as pt
@@ -151,7 +148,6 @@ logger.info(f"Benchmark settings: seeds={seed_list}")
 worker_timeout_s = 60 * 60
 
 result_rows = []
-mp_ctx = mp.get_context("fork")
 for n_archetypes in n_archetypes_list:
     logger.info(f"Benchmarking n_archetypes={n_archetypes}")
     for n_cells in n_cells_list:
@@ -165,94 +161,6 @@ for n_archetypes in n_archetypes_list:
         _MP_ADATA = adata_with_n_cells
         for seed in seed_list:
             logger.info(f"Benchmarking seed={seed}")
-            result_queue = mp_ctx.Queue()
-            proc = mp_ctx.Process(
-                target=_benchmark_worker,
-                args=(result_queue, n_archetypes, seed),
+            pt.compute_archetypes(
+                adata=_MP_ADATA.copy(), n_archetypes=n_archetypes, n_restarts=1
             )
-            proc.start()
-            try:
-                result = result_queue.get(timeout=worker_timeout_s)
-            except queue.Empty:
-                logger.error(
-                    f"Timeout: n_archetypes={n_archetypes} n_cells={n_cells} "
-                    f"seed={seed} after {worker_timeout_s}s"
-                )
-                proc.terminate()
-                proc.join()
-                result_rows.append(
-                    {
-                        "n_archetypes": n_archetypes,
-                        "n_cells": n_cells,
-                        "seed": seed,
-                        "ok": False,
-                        "error": f"timeout after {worker_timeout_s}s",
-                        "time": np.nan,
-                        "time_total": np.nan,
-                        "time_copy": np.nan,
-                        "time_compute": np.nan,
-                    }
-                )
-                continue
-            proc.join()
-            if proc.exitcode != 0:
-                logger.error(
-                    f"Worker failed: n_archetypes={n_archetypes} n_cells={n_cells} "
-                    f"seed={seed} exitcode={proc.exitcode}"
-                )
-                result_rows.append(
-                    {
-                        "n_archetypes": n_archetypes,
-                        "n_cells": n_cells,
-                        "seed": seed,
-                        "ok": False,
-                        "error": f"worker exit code {proc.exitcode}",
-                        "time": np.nan,
-                        "time_total": np.nan,
-                        "time_copy": np.nan,
-                        "time_compute": np.nan,
-                    }
-                )
-                continue
-            if not result["ok"]:
-                logger.error(
-                    f"Worker error: n_archetypes={n_archetypes} n_cells={n_cells} "
-                    f"seed={seed} error={result['error']}"
-                )
-                result_rows.append(
-                    {
-                        "n_archetypes": n_archetypes,
-                        "n_cells": n_cells,
-                        "seed": seed,
-                        "ok": False,
-                        "error": result["error"],
-                        "time": np.nan,
-                        "time_total": np.nan,
-                        "time_copy": np.nan,
-                        "time_compute": np.nan,
-                    }
-                )
-                continue
-
-            result_row = {
-                "n_archetypes": n_archetypes,
-                "n_cells": n_cells,
-                "seed": seed,
-                "ok": True,
-                "error": "",
-                "time": result["time_compute"],
-                "time_total": result["time_total"],
-                "time_copy": result["time_copy"],
-                "time_compute": result["time_compute"],
-            }
-            result_rows.append(result_row)
-            logger.info(
-                f"Run complete: n_archetypes={n_archetypes} n_cells={n_cells} "
-                f"seed={seed} time_total={result['time_total']:.2f}s "
-                f"time_compute={result['time_compute']:.2f}s"
-            )
-
-result_df = pd.DataFrame(result_rows)
-results_path = output_dir / "k562_runtime_results.csv"
-result_df.to_csv(results_path, index=False)
-logger.info(f"Wrote results to {results_path.resolve()}")

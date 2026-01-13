@@ -49,3 +49,8 @@
 2026-01-13 20:33:13,185 INFO k562_memory_bench: Benchmarking seed=383329927
 2026-01-13 20:38:15,885 INFO k562_memory_bench: Run complete: n_archetypes=3 n_cells=1000 seed=383329927 time_total=2.24s time_compute=2.18s rss_peak=37198.96MB
 2026-01-13 20:38:15,887 INFO k562_memory_bench: Benchmarking seed=3324115916
+2026-01-13 20:43:18,617 INFO k562_memory_bench: Run complete: n_archetypes=3 n_cells=1000 seed=3324115916 time_total=2.26s time_compute=2.21s rss_peak=37198.96MB
+2026-01-13 20:43:18,628 INFO k562_memory_bench: Using n_cells=2000 (subsampled)
+2026-01-13 20:43:18,629 INFO k562_memory_bench: Benchmarking seed=383329927
+2026-01-13 20:48:21,554 INFO k562_memory_bench: Run complete: n_archetypes=3 n_cells=2000 seed=383329927 time_total=2.45s time_compute=2.32s rss_peak=37198.97MB
+2026-01-13 20:48:21,556 INFO k562_memory_bench: Benchmarking seed=3324115916

@@ -17,3 +17,4 @@ tmp_slurm_submissions.md
 submit_python_job_helix.sbatch
 .ipynb_checkpoints/
 slurm-*
+logs/*

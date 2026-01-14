@@ -9,10 +9,10 @@ import partipy as pt
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, DATA_PATH
 
 ## set up output directory
-figure_dir = Path(FIGURE_PATH) / "hepatocyte_example"
+figure_dir = Path(FIGURE_PATH) / "fibroblast_cross_condition"
 figure_dir.mkdir(exist_ok=True, parents=True)
 
-output_dir = Path(OUTPUT_PATH) / "hepatocyte_example"
+output_dir = Path(OUTPUT_PATH) / "fibroblast_cross_condition"
 output_dir.mkdir(exist_ok=True, parents=True)
 
 adata = sc.read_h5ad(Path(DATA_PATH) / "human_dcm_hcm_scportal_03.17.2022.h5ad")

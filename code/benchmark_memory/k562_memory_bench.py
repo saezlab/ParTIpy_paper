@@ -75,7 +75,7 @@ def _rss_sampler(stop_event, interval_s, result_dict, result_key):
     result_dict[result_key] = max_rss
 
 
-def _benchmark_worker(result_queue, n_archetypes, seed):
+def _benchmark_worker(result_queue, n_archetypes, seed, coreset_fraction):
     try:
         rss_total_start_mb = get_rss_mb()
         peak_total_start_mb = get_peak_rss_mb()
@@ -104,6 +104,11 @@ def _benchmark_worker(result_queue, n_archetypes, seed):
         )
         compute_thread.start()
         compute_start_time = time.time()
+        coreset_kwargs = {}
+        if coreset_fraction < 1.0:
+            coreset_kwargs["coreset_algorithm"] = "standard"
+            coreset_kwargs["coreset_fraction"] = coreset_fraction
+
         pt.compute_archetypes(
             adata_bench,
             n_archetypes=n_archetypes,
@@ -112,6 +117,7 @@ def _benchmark_worker(result_queue, n_archetypes, seed):
             save_to_anndata=True,
             archetypes_only=False,
             verbose=False,
+            **coreset_kwargs,
         )
         compute_end_time = time.time()
         compute_stop.set()
@@ -195,9 +201,10 @@ logger.info(f"Loaded data: n_obs={adata.n_obs} n_vars={adata.n_vars}")
 # n_archetypes_list = [2, 3]
 
 # actual settings
-n_archetypes_list = [2, 3, 4, 5, 6]
-seed_list = SEED_DICT["xs"]
+n_archetypes_list = [3, 6, 9]
+seed_list = SEED_DICT["m"]
 n_cells_list = [1_000, 2_000, 10_000, 20_000, 100_000, 200_000, 1_000_000]
+coreset_fraction_list = [1.00, 0.10]
 
 # subsample the data
 n_cells_max = max(n_cells_list)
@@ -226,6 +233,7 @@ pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=20)
 logger.info(f"Benchmark settings: n_archetypes={n_archetypes_list}")
 logger.info(f"Benchmark settings: n_cells={n_cells_list}")
 logger.info(f"Benchmark settings: seeds={seed_list}")
+logger.info(f"Benchmark settings: coreset_fractions={coreset_fraction_list}")
 
 worker_timeout_s = 60 * 60
 
@@ -242,157 +250,175 @@ for n_archetypes in n_archetypes_list:
             adata_with_n_cells = adata
             logger.info(f"Using n_cells={n_cells} (full)")
         _MP_ADATA = adata_with_n_cells
-        for seed in seed_list:
-            logger.info(f"Benchmarking seed={seed}")
-            result_queue = mp_ctx.Queue()
-            proc = mp_ctx.Process(
-                target=_benchmark_worker,
-                args=(result_queue, n_archetypes, seed),
-            )
-            proc.start()
-            try:
-                result = result_queue.get(timeout=worker_timeout_s)
-            except queue.Empty:
-                logger.error(
-                    "Timeout: n_archetypes=%s n_cells=%s seed=%s after %ss",
-                    n_archetypes,
-                    n_cells,
+        for coreset_fraction in coreset_fraction_list:
+            logger.info(f"Benchmarking coreset_fraction={coreset_fraction:.2f}")
+            for seed in seed_list:
+                logger.info(
+                    "Benchmarking seed=%s (coreset_fraction=%.2f)",
                     seed,
-                    worker_timeout_s,
+                    coreset_fraction,
                 )
-                proc.terminate()
+                result_queue = mp_ctx.Queue()
+                proc = mp_ctx.Process(
+                    target=_benchmark_worker,
+                    args=(result_queue, n_archetypes, seed, coreset_fraction),
+                )
+                proc.start()
+                try:
+                    result = result_queue.get(timeout=worker_timeout_s)
+                except queue.Empty:
+                    logger.error(
+                        "Timeout: n_archetypes=%s n_cells=%s coreset_fraction=%.2f seed=%s after %ss",
+                        n_archetypes,
+                        n_cells,
+                        coreset_fraction,
+                        seed,
+                        worker_timeout_s,
+                    )
+                    proc.terminate()
+                    proc.join()
+                    result_rows.append(
+                        {
+                            "n_archetypes": n_archetypes,
+                            "n_cells": n_cells,
+                            "coreset_fraction": coreset_fraction,
+                            "seed": seed,
+                            "ok": False,
+                            "error": f"timeout after {worker_timeout_s}s",
+                            "rss_poll_ms": RSS_POLL_MS,
+                            "time": np.nan,
+                            "time_total": np.nan,
+                            "time_copy": np.nan,
+                            "time_compute": np.nan,
+                            "mem_rss_start_mb": np.nan,
+                            "mem_rss_post_copy_mb": np.nan,
+                            "mem_rss_end_mb": np.nan,
+                            "mem_rss_delta_post_copy_mb": np.nan,
+                            "mem_rss_delta_since_start_mb": np.nan,
+                            "mem_rss_peak_mb": np.nan,
+                            "mem_rss_peak_over_post_copy_mb": np.nan,
+                            "mem_rss_peak_over_start_mb": np.nan,
+                            "mem_rss_peak_copy_sampled_mb": np.nan,
+                            "mem_rss_peak_compute_sampled_mb": np.nan,
+                        }
+                    )
+                    continue
                 proc.join()
-                result_rows.append(
-                    {
-                        "n_archetypes": n_archetypes,
-                        "n_cells": n_cells,
-                        "seed": seed,
-                        "ok": False,
-                        "error": f"timeout after {worker_timeout_s}s",
-                        "rss_poll_ms": RSS_POLL_MS,
-                        "time": np.nan,
-                        "time_total": np.nan,
-                        "time_copy": np.nan,
-                        "time_compute": np.nan,
-                        "mem_rss_start_mb": np.nan,
-                        "mem_rss_post_copy_mb": np.nan,
-                        "mem_rss_end_mb": np.nan,
-                        "mem_rss_delta_post_copy_mb": np.nan,
-                        "mem_rss_delta_since_start_mb": np.nan,
-                        "mem_rss_peak_mb": np.nan,
-                        "mem_rss_peak_over_post_copy_mb": np.nan,
-                        "mem_rss_peak_over_start_mb": np.nan,
-                        "mem_rss_peak_copy_sampled_mb": np.nan,
-                        "mem_rss_peak_compute_sampled_mb": np.nan,
-                    }
-                )
-                continue
-            proc.join()
-            if proc.exitcode != 0:
-                logger.error(
-                    "Worker failed: n_archetypes=%s n_cells=%s seed=%s exitcode=%s",
-                    n_archetypes,
-                    n_cells,
-                    seed,
-                    proc.exitcode,
-                )
-                result_rows.append(
-                    {
-                        "n_archetypes": n_archetypes,
-                        "n_cells": n_cells,
-                        "seed": seed,
-                        "ok": False,
-                        "error": f"worker exit code {proc.exitcode}",
-                        "rss_poll_ms": RSS_POLL_MS,
-                        "time": np.nan,
-                        "time_total": np.nan,
-                        "time_copy": np.nan,
-                        "time_compute": np.nan,
-                        "mem_rss_start_mb": np.nan,
-                        "mem_rss_post_copy_mb": np.nan,
-                        "mem_rss_end_mb": np.nan,
-                        "mem_rss_delta_post_copy_mb": np.nan,
-                        "mem_rss_delta_since_start_mb": np.nan,
-                        "mem_rss_peak_mb": np.nan,
-                        "mem_rss_peak_over_post_copy_mb": np.nan,
-                        "mem_rss_peak_over_start_mb": np.nan,
-                        "mem_rss_peak_copy_sampled_mb": np.nan,
-                        "mem_rss_peak_compute_sampled_mb": np.nan,
-                    }
-                )
-                continue
-            if not result["ok"]:
-                logger.error(
-                    "Worker error: n_archetypes=%s n_cells=%s seed=%s error=%s",
-                    n_archetypes,
-                    n_cells,
-                    seed,
-                    result["error"],
-                )
-                result_rows.append(
-                    {
-                        "n_archetypes": n_archetypes,
-                        "n_cells": n_cells,
-                        "seed": seed,
-                        "ok": False,
-                        "error": result["error"],
-                        "rss_poll_ms": RSS_POLL_MS,
-                        "time": np.nan,
-                        "time_total": np.nan,
-                        "time_copy": np.nan,
-                        "time_compute": np.nan,
-                        "mem_rss_start_mb": np.nan,
-                        "mem_rss_post_copy_mb": np.nan,
-                        "mem_rss_end_mb": np.nan,
-                        "mem_rss_delta_post_copy_mb": np.nan,
-                        "mem_rss_delta_since_start_mb": np.nan,
-                        "mem_rss_peak_mb": np.nan,
-                        "mem_rss_peak_over_post_copy_mb": np.nan,
-                        "mem_rss_peak_over_start_mb": np.nan,
-                        "mem_rss_peak_copy_sampled_mb": np.nan,
-                        "mem_rss_peak_compute_sampled_mb": np.nan,
-                    }
-                )
-                continue
+                if proc.exitcode != 0:
+                    logger.error(
+                        "Worker failed: n_archetypes=%s n_cells=%s coreset_fraction=%.2f seed=%s exitcode=%s",
+                        n_archetypes,
+                        n_cells,
+                        coreset_fraction,
+                        seed,
+                        proc.exitcode,
+                    )
+                    result_rows.append(
+                        {
+                            "n_archetypes": n_archetypes,
+                            "n_cells": n_cells,
+                            "coreset_fraction": coreset_fraction,
+                            "seed": seed,
+                            "ok": False,
+                            "error": f"worker exit code {proc.exitcode}",
+                            "rss_poll_ms": RSS_POLL_MS,
+                            "time": np.nan,
+                            "time_total": np.nan,
+                            "time_copy": np.nan,
+                            "time_compute": np.nan,
+                            "mem_rss_start_mb": np.nan,
+                            "mem_rss_post_copy_mb": np.nan,
+                            "mem_rss_end_mb": np.nan,
+                            "mem_rss_delta_post_copy_mb": np.nan,
+                            "mem_rss_delta_since_start_mb": np.nan,
+                            "mem_rss_peak_mb": np.nan,
+                            "mem_rss_peak_over_post_copy_mb": np.nan,
+                            "mem_rss_peak_over_start_mb": np.nan,
+                            "mem_rss_peak_copy_sampled_mb": np.nan,
+                            "mem_rss_peak_compute_sampled_mb": np.nan,
+                        }
+                    )
+                    continue
+                if not result["ok"]:
+                    logger.error(
+                        "Worker error: n_archetypes=%s n_cells=%s coreset_fraction=%.2f seed=%s error=%s",
+                        n_archetypes,
+                        n_cells,
+                        coreset_fraction,
+                        seed,
+                        result["error"],
+                    )
+                    result_rows.append(
+                        {
+                            "n_archetypes": n_archetypes,
+                            "n_cells": n_cells,
+                            "coreset_fraction": coreset_fraction,
+                            "seed": seed,
+                            "ok": False,
+                            "error": result["error"],
+                            "rss_poll_ms": RSS_POLL_MS,
+                            "time": np.nan,
+                            "time_total": np.nan,
+                            "time_copy": np.nan,
+                            "time_compute": np.nan,
+                            "mem_rss_start_mb": np.nan,
+                            "mem_rss_post_copy_mb": np.nan,
+                            "mem_rss_end_mb": np.nan,
+                            "mem_rss_delta_post_copy_mb": np.nan,
+                            "mem_rss_delta_since_start_mb": np.nan,
+                            "mem_rss_peak_mb": np.nan,
+                            "mem_rss_peak_over_post_copy_mb": np.nan,
+                            "mem_rss_peak_over_start_mb": np.nan,
+                            "mem_rss_peak_copy_sampled_mb": np.nan,
+                            "mem_rss_peak_compute_sampled_mb": np.nan,
+                        }
+                    )
+                    continue
 
-            result_row = {
-                "n_archetypes": n_archetypes,
-                "n_cells": n_cells,
-                "seed": seed,
-                "ok": True,
-                "error": "",
-                "rss_poll_ms": result["rss_poll_ms"],
-                "time": result["time_compute"],
-                "time_total": result["time_total"],
-                "time_copy": result["time_copy"],
-                "time_compute": result["time_compute"],
-                "mem_rss_start_mb": result["mem_rss_start_mb"],
-                "mem_rss_post_copy_mb": result["mem_rss_post_copy_mb"],
-                "mem_rss_end_mb": result["mem_rss_end_mb"],
-                "mem_rss_delta_post_copy_mb": result["mem_rss_delta_post_copy_mb"],
-                "mem_rss_delta_since_start_mb": result["mem_rss_delta_since_start_mb"],
-                "mem_rss_peak_mb": result["mem_rss_peak_mb"],
-                "mem_rss_peak_over_post_copy_mb": result[
-                    "mem_rss_peak_over_post_copy_mb"
-                ],
-                "mem_rss_peak_over_start_mb": result["mem_rss_peak_over_start_mb"],
-                "mem_rss_peak_copy_sampled_mb": result["mem_rss_peak_copy_sampled_mb"],
-                "mem_rss_peak_compute_sampled_mb": result[
-                    "mem_rss_peak_compute_sampled_mb"
-                ],
-            }
-            result_rows.append(result_row)
-            logger.info(
-                "Run complete: n_archetypes=%s n_cells=%s seed=%s time_total=%.2fs time_compute=%.2fs rss_peak=%.2fMB (start=%.2fMB, delta=%.2fMB)",
-                n_archetypes,
-                n_cells,
-                seed,
-                result["time_total"],
-                result["time_compute"],
-                result["mem_rss_peak_mb"],
-                result["mem_rss_start_mb"],
-                result["mem_rss_peak_over_start_mb"],
-            )
+                result_row = {
+                    "n_archetypes": n_archetypes,
+                    "n_cells": n_cells,
+                    "coreset_fraction": coreset_fraction,
+                    "seed": seed,
+                    "ok": True,
+                    "error": "",
+                    "rss_poll_ms": result["rss_poll_ms"],
+                    "time": result["time_compute"],
+                    "time_total": result["time_total"],
+                    "time_copy": result["time_copy"],
+                    "time_compute": result["time_compute"],
+                    "mem_rss_start_mb": result["mem_rss_start_mb"],
+                    "mem_rss_post_copy_mb": result["mem_rss_post_copy_mb"],
+                    "mem_rss_end_mb": result["mem_rss_end_mb"],
+                    "mem_rss_delta_post_copy_mb": result["mem_rss_delta_post_copy_mb"],
+                    "mem_rss_delta_since_start_mb": result[
+                        "mem_rss_delta_since_start_mb"
+                    ],
+                    "mem_rss_peak_mb": result["mem_rss_peak_mb"],
+                    "mem_rss_peak_over_post_copy_mb": result[
+                        "mem_rss_peak_over_post_copy_mb"
+                    ],
+                    "mem_rss_peak_over_start_mb": result["mem_rss_peak_over_start_mb"],
+                    "mem_rss_peak_copy_sampled_mb": result[
+                        "mem_rss_peak_copy_sampled_mb"
+                    ],
+                    "mem_rss_peak_compute_sampled_mb": result[
+                        "mem_rss_peak_compute_sampled_mb"
+                    ],
+                }
+                result_rows.append(result_row)
+                logger.info(
+                    "Run complete: n_archetypes=%s n_cells=%s coreset_fraction=%.2f seed=%s time_total=%.2fs time_compute=%.2fs rss_peak=%.2fMB (start=%.2fMB, delta=%.2fMB)",
+                    n_archetypes,
+                    n_cells,
+                    coreset_fraction,
+                    seed,
+                    result["time_total"],
+                    result["time_compute"],
+                    result["mem_rss_peak_mb"],
+                    result["mem_rss_start_mb"],
+                    result["mem_rss_peak_over_start_mb"],
+                )
 
 result_df = pd.DataFrame(result_rows)
 results_path = output_dir / "k562_memory_results.csv"

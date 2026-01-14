@@ -190,7 +190,9 @@ for celltype in celltype_labels:
                 n_archetypes=number_of_archetypes_dict[celltype],
                 n_restarts=5,
                 coreset_algorithm="standard" if coreset_fraction < 1 else None,
-                coreset_fraction=coreset_fraction,
+                coreset_fraction=coreset_fraction
+                if coreset_fraction < 1
+                else 0.1,  # NOTE: because I am not allowed to put 1.0
                 seed=seed,
                 save_to_anndata=True,
                 archetypes_only=False,

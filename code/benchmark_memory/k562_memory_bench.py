@@ -202,7 +202,7 @@ logger.info(f"Loaded data: n_obs={adata.n_obs} n_vars={adata.n_vars}")
 
 # actual settings
 n_archetypes_list = [3, 6, 9]
-seed_list = SEED_DICT["m"]
+seed_list = SEED_DICT["s"]
 n_cells_list = [1_000, 2_000, 10_000, 20_000, 100_000, 200_000, 1_000_000]
 coreset_fraction_list = [1.00, 0.10]
 

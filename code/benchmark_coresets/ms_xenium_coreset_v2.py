@@ -386,10 +386,13 @@ for celltype in celltype_labels:
             end_time = time.time()
             execution_time = end_time - start_time
 
-            Z = ref_Z
-            Z_hat = pt.get_aa_result(
+            bench_results = pt.get_aa_result(
                 adata_bench, n_archetypes=number_of_archetypes_dict[celltype]
-            )["Z"].copy()
+            )
+            Z = ref_Z
+            Z_hat = bench_results["Z"].copy()
+            rss = bench_results["RSS_full"].copy()
+            varexpl = bench_results["varexpl"].copy()
             assert np.all(Z.shape == Z_hat.shape)
             euclidean_d = cdist(Z, Z_hat, metric="euclidean")
             ref_idx, query_idx = linear_sum_assignment(euclidean_d)
@@ -451,8 +454,8 @@ for celltype in celltype_labels:
                     scaled_euclid_percentile_per_matched_arch
                 ),
                 "mean_gex_corr": np.mean(pearson_corr_per_matched_arch),
-                "rss": adata_bench.uns["AA_results"]["RSS_full"],
-                "varexpl": adata_bench.uns["AA_results"]["varexpl"],
+                "rss": rss,
+                "varexpl": varexpl,
                 "mean_rel_l2_distance": np.mean(rel_dist_between_archetypes),
                 "seed": seed,
                 "coreset_fraction": coreset_fraction,

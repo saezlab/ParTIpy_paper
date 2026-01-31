@@ -51,7 +51,15 @@ python -m code.benchmark_coresets.coreset_meta
 ```bash
 mamba activate partipy
 
-python -m code.benchmark_memory.k562_memory_bench.py
+python -m code.benchmark_memory.k562_memory_bench
+python -m code.benchmark_memory.hct116_memory_bench
+python -m code.benchmark_memory.hek293t_memory_bench
+
+python -m code.benchmark_memory.k562_memory_bench_only_pca
+python -m code.benchmark_memory.hct116_memory_bench_only_pca
+python -m code.benchmark_memory.hek293t_memory_bench_only_pca
+
+python -m code.benchmark_memory.memory_meta
 ```
 
 ## Examples

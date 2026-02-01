@@ -88,6 +88,14 @@ mamba activate partipy
 python -m code.examples.hepatocyte_example
 ```
 
+### Fibroblast Cross-Condition Analysis
+
+```bash
+mamba activate partipy
+
+python -m code.examples.fibroblast_cross_condition
+```
+
 ### Additional Scripts
 
 ```bash

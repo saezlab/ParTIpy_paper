@@ -9,6 +9,7 @@ import partipy as pt
 
 import numpy as np
 import pandas as pd
+from scipy.spatial import ConvexHull
 from scipy.spatial.distance import cdist
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
@@ -178,16 +179,21 @@ pt.compute_bootstrap_variance(
     adata=adata, n_bootstrap=50, n_archetypes_list=range(2, 8)
 )
 
-p = pt.plot_bootstrap_variance(adata)
+p = pt.plot_bootstrap_variance(adata) + pn.theme_bw()
 p.save(figure_dir / "plot_bootstrap_variance.pdf", verbose=False)
 
-p = pt.plot_archetypes_2D(
-    adata=adata, show_contours=True, result_filters={"n_archetypes": 4}, alpha=0.05
+p = (
+    pt.plot_archetypes_2D(
+        adata=adata, show_contours=True, result_filters={"n_archetypes": 4}, alpha=0.05
+    )
+    + pn.theme_bw()
 )
 p.save(figure_dir / "plot_archetypes_2D.pdf", verbose=False)
+p.save(figure_dir / "plot_archetypes_2D.png", verbose=False)
 
-p = pt.plot_bootstrap_2D(adata, result_filters={"n_archetypes": 4})
+p = pt.plot_bootstrap_2D(adata, result_filters={"n_archetypes": 4}) + pn.theme_bw()
 p.save(figure_dir / "plot_bootstrap_2D.pdf", verbose=False)
+p.save(figure_dir / "plot_bootstrap_2D.png", verbose=False)
 
 ########################################################################
 # Some 2D plots
@@ -206,6 +212,7 @@ p = (
     + pn.scale_color_manual(values=color_dict)
 )
 p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_1.pdf", verbose=False)
+p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_1.png", verbose=False)
 
 p = (
     pt.plot_archetypes_2D(
@@ -221,6 +228,7 @@ p = (
     + pn.scale_color_manual(values=color_dict)
 )
 p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_2.pdf", verbose=False)
+p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_2.png", verbose=False)
 
 p = (
     pt.plot_archetypes_2D(
@@ -236,6 +244,7 @@ p = (
     + pn.scale_color_manual(values=color_dict)
 )
 p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2.pdf", verbose=False)
+p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2.png", verbose=False)
 
 ########################################################################
 # Some enrichment bar plots
@@ -274,8 +283,7 @@ base_covars = ["sex"]
 for c in base_covars:
     if c not in adata.obs.columns:
         raise KeyError(
-            f"Covariate '{c}' not found in adata.obs columns: "
-            f"{list(adata.obs.columns)}"
+            f"Covariate '{c}' not found in adata.obs columns: {list(adata.obs.columns)}"
         )
     if str(adata.obs[c].dtype) == "object":
         adata.obs[c] = adata.obs[c].astype("category")
@@ -328,6 +336,11 @@ for pc_idx in [0, 1, 2]:
     obs_agg[f"pc_{pc_idx}"] = X_agg_conv[:, pc_idx]
 
 # O) plotting
+hull_df = None
+if len(archetype_df) >= 3:
+    hull = ConvexHull(archetype_df[["pc_0", "pc_1"]].to_numpy())
+    hull_points = archetype_df.iloc[hull.vertices][["pc_0", "pc_1"]]
+    hull_df = pd.concat([hull_points, hull_points.iloc[:1]], ignore_index=True)
 p = (
     (
         pn.ggplot()
@@ -339,17 +352,30 @@ p = (
             alpha=0.5,
             size=2,
         )
-        + pn.geom_text(
+        + pn.geom_label(
             data=archetype_df,
             mapping=pn.aes(x="pc_0", y="pc_1", label="archetype"),
-            color="green",
+            color="black",
+            fill="white",
+            boxcolor="black",
+            label_r=0.2,
+            label_padding=0.2,
+            label_size=0.7,
             size=20,
         )
     )
     + pn.theme_bw()
     + pn.scale_color_manual(values=color_dict)
 )
-p.show()
+if hull_df is not None:
+    p += pn.geom_path(
+        data=hull_df,
+        mapping=pn.aes(x="pc_0", y="pc_1"),
+        color="grey",
+        size=1.2,
+        alpha=0.5,
+    )
+p.save(figure_dir / "patient_pseudobulk_in_convex_hull.pdf", verbose=False)
 
 # 6) compute the distance matrix
 dist_key = "euclidean"

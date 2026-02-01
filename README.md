@@ -10,7 +10,7 @@ For additional examples and applications of Archetypal Analysis and Pareto Task 
 
 ## Installation
 
-We recommend installing dependencies with **mamba** or **mamba**.  
+We recommend installing dependencies with **mamba** (or **conda**)
 
 ```bash
 mamba env create -n partipy -f env.yaml
@@ -32,6 +32,7 @@ mamba activate partipy
 python -m code.benchmark_algorithms.ms_bench
 python -m code.benchmark_algorithms.ms_xenium_bench
 python -m code.benchmark_algorithms.lupus_bench
+
 python -m code.benchmark_algorithms.bench_meta
 ```
 
@@ -43,7 +44,14 @@ mamba activate partipy
 python -m code.benchmark_coresets.ms_coreset
 python -m code.benchmark_coresets.ms_xenium_coreset
 python -m code.benchmark_coresets.lupus_coreset
+
 python -m code.benchmark_coresets.coreset_meta
+
+python -m code.benchmark_coresets.ms_coreset_v2
+python -m code.benchmark_coresets.ms_xenium_coreset_v2
+python -m code.benchmark_coresets.lupus_coreset_v2
+
+python -m code.benchmark_coresets.coreset_meta_v2
 ```
 
 ### Memory

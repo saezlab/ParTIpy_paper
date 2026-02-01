@@ -14,6 +14,11 @@ from scipy.spatial.distance import cdist
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from statsmodels.stats.multitest import multipletests
+from mizani.bounds import squish
+import decoupler as dc
+import scipy.cluster.hierarchy as sch
+from scipy.spatial.distance import pdist
+
 
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, DATA_PATH
 
@@ -31,12 +36,11 @@ output_dir.mkdir(exist_ok=True, parents=True)
 # Setup color schemes
 ########################################################################
 color_dict = {
-    "NF": "#1F77B4",
-    "CM": "#D62728",
+    "NF": "#01665E",  # teal (blue-green)
+    "CM": "#8C510A",  # brown
 }
-
 ########################################################################
-# Setup marker genes
+# Generic marker genes in cardio biology
 ########################################################################
 marker_dict_generic = {
     "Fibroblast": [
@@ -71,16 +75,123 @@ marker_dict_generic = {
     ],
 }
 
-fibro_marker_dict = {
-    "myofibroblast-like": [
-        "POSTN",
-        "THBS4",
-    ],
-    "quiescent-like": [
-        "DCN",
-        "ELN",
-    ],
+
+########################################################################
+# Fibroblast specific marker genes (already ordered by archetype)
+########################################################################
+marker_blocks = {
+    0: {
+        "function": "quiescent / signaling; axon-guidance & ion-channel enriched",
+        "genes": [
+            "NRP1",
+            "CNTNAP2",
+            "SLIT3",
+            "KCND2",
+            "KCND3",
+            "CACNA2D3",
+            "ANK3",
+            "FBLN1",
+            # "LSAMP",
+            # "NAV3",
+            # "FLRT2",
+            # "GRID2",
+            # "ANK2",
+            # "PDZRN4",
+            # "SMAD6",
+            # "BICC1",
+        ],
+        "TFs": [
+            "NR2F2",  # vascular / mesenchymal lineage
+            "EMX2",  # developmental patterning
+            "SP1",  # basal transcription / promoter occupancy
+            "LMO2",  # lineage regulation
+            "BRCA1",  # genome integrity / quiescence
+            "PROX1",  # fibroblast / vascular identity
+            "TP53",  # stress surveillance
+            "SRF",  # structural maintenance (low-activation context)
+        ],
+    },
+    1: {
+        "function": "perivascular / vessel-associated fibroblasts",
+        "genes": [
+            "COL15A1",
+            "COLEC12",
+            "FREM1",
+            "PDE5A",
+            "KCNMB2",
+            "KCNN3",
+            "SOX6",
+            "TCF4",
+        ],
+        "TFs": [
+            "RORA",  # niche / circadian modulation
+            "LHX3",  # developmental patterning
+            "ATOH1",  # differentiation control
+            "MKX",  # fibroblast identity restraint
+            "ETV6",  # vascular-associated regulation
+            "KLF17",  # anti-activation TF
+            "NEUROD2",  # positional identity reuse
+            "HOXA5",  # anterior–posterior patterning
+        ],
+    },
+    2: {
+        "function": "activated fibroblast → myofibroblast / matrifibrocyte axis (fibrotic ECM)",
+        "genes": [
+            "POSTN",
+            "THBS4",
+            "FAP",
+            "COL22A1",
+            "AEBP1",
+            "ITGA10",
+            "LTBP2",
+            "WISP2",
+        ],
+        "TFs": [
+            "MYF5",  # deep mesenchymal program
+            "TWIST1",  # EMT / activation
+            "BHLHA15",  # differentiation switch
+            "SCX",  # myofibroblast / tendon-like program
+            "SRF",  # contractility (high-activation context)
+            "KDM2A",  # chromatin remodeling
+            "KAT6A",  # histone acetylation
+            "JUNB",  # immediate-early activation
+        ],
+    },
+    3: {
+        "function": "stress-responsive / metabolic activation (redox, hypoxia, detox)",
+        "genes": [
+            "FKBP5",
+            "HIF3A",
+            "TXNRD1",
+            "GPX3",
+            "NNMT",
+            "MGST1",
+            "CFD",
+            "GLUL",
+            # "ADH1B",
+        ],
+        "TFs": [
+            "NR3C1",  # glucocorticoid stress response (strongest overall)
+            "HIF1A",  # hypoxia
+            "PPARD",  # lipid metabolism
+            "NFKB",  # inflammation
+            "CEBPB",  # inflammatory transcription
+            "MYC",  # metabolic scaling
+            "NFE2L2",  # oxidative stress (NRF2)
+            "FOXO3",  # stress resilience
+        ],
+    },
 }
+gene_list = []
+for a in [0, 1, 2, 3]:
+    gene_list += marker_blocks[a]["genes"]
+# de-duplicate while preserving order
+seen = set()
+gene_list = [g for g in gene_list if not (g in seen or seen.add(g))]
+
+tf_list = [tf for a in [0, 1, 2, 3] for tf in marker_blocks[a]["TFs"]]
+seen = set()
+tf_list = [tf for tf in tf_list if not (tf in seen or seen.add(tf))]
 
 ########################################################################
 # Setup prior knowledge marker TFs and pathways
@@ -252,6 +363,11 @@ p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2.png", verbose=False)
 pt.compute_archetype_weights(
     adata=adata, mode="automatic", result_filters={"n_archetypes": 4}
 )
+# NOTE: here we make sure that the weights per archetype sums to one
+weights = pt.get_aa_cell_weights(adata, n_archetypes=4)
+weights /= weights.sum(axis=0, keepdims=True)
+assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
+
 disease_enrichment = pt.compute_meta_enrichment(
     adata=adata, meta_col="disease", result_filters={"n_archetypes": 4}
 )
@@ -545,6 +661,226 @@ uni_df["q_empirical_BH"] = qvals
 uni_df["reject_q_0p05"] = rej
 
 uni_df.to_csv(output_dir / "disease_enrichment.csv", index=False)
+
+########################################################################
+# Characterize archetypal gene expression
+########################################################################
+gene_mask = adata.var.index[adata.var["n_cells"] > 100].to_list()
+archetype_expression = pt.compute_archetype_expression(adata=adata, layer="z_scaled")[
+    gene_mask
+]
+
+arch_expr_long = archetype_expression.copy().T
+arch_expr_long.columns = [f"arch_{c}" for c in arch_expr_long.columns]
+arch_expr_long = arch_expr_long.reset_index(names="gene")
+arch_expr_long = arch_expr_long.melt(id_vars="gene")
+arch_expr_long.to_csv(output_dir / "arch_expr_long.csv", index=False)
+
+plot_df = arch_expr_long.loc[arch_expr_long["gene"].isin(gene_list), :].copy()
+plot_df["gene"] = pd.Categorical(plot_df["gene"], categories=gene_list, ordered=True)
+arch_order = [f"arch_{idx}" for idx in range(4)]
+plot_df["variable"] = pd.Categorical(
+    plot_df["variable"], categories=arch_order, ordered=True
+)
+p = (
+    pn.ggplot(plot_df, pn.aes(x="gene", y="variable", fill="value"))
+    + pn.geom_tile()
+    + pn.scale_fill_gradient2(
+        low="#2166AC",
+        mid="#FFFFFF",
+        high="#B2182B",
+        midpoint=0,
+        limits=(-0.75, 0.75),
+        oob=squish,
+    )
+    + pn.theme_bw()
+    + pn.theme(
+        axis_text_x=pn.element_text(rotation=90, ha="center"),
+        figure_size=(9, 3),
+    )
+    + pn.labs(x="Gene", y="Archetype", fill="Mean z-scored\nGene Expression")
+)
+p.save(figure_dir / "gene_expression_tile_plot.pdf", verbose=False)
+
+########################################################################
+# Characterize archetypal TF activation
+########################################################################
+collectri = dc.op.collectri(organism="human")
+collectri_acts_ulm_est, collectri_acts_ulm_est_p = dc.mt.ulm(
+    data=archetype_expression, net=collectri, verbose=False
+)
+
+df_1 = collectri_acts_ulm_est.reset_index(names="archetype").melt(
+    id_vars="archetype", var_name="TF", value_name="t_value"
+)
+df_2 = collectri_acts_ulm_est_p.reset_index(names="archetype").melt(
+    id_vars="archetype", var_name="TF", value_name="p_value"
+)
+collectri_df = df_1.join(df_2.set_index(["archetype", "TF"]), on=["archetype", "TF"])
+collectri_df.to_csv(output_dir / "collectri_df.csv", index=False)
+del df_1, df_2
+
+plot_df = collectri_df
+plot_df = plot_df.loc[plot_df["TF"].isin(tf_list), :].copy()
+plot_df["TF"] = pd.Categorical(plot_df["TF"], categories=tf_list, ordered=True)
+arch_order = [f"{idx}" for idx in range(4)]
+plot_df["archetype"] = pd.Categorical(
+    plot_df["archetype"], categories=arch_order, ordered=True
+)
+p = (
+    pn.ggplot(plot_df, pn.aes(x="TF", y="archetype", fill="t_value"))
+    + pn.geom_tile()
+    + pn.scale_fill_gradient2(
+        low="#2166AC",
+        mid="#FFFFFF",
+        high="#B2182B",
+        midpoint=0,
+        oob=squish,
+    )
+    + pn.theme_bw()
+    + pn.theme(
+        axis_text_x=pn.element_text(rotation=90, ha="center"),
+        figure_size=(9, 3),
+    )
+    + pn.labs(x="Gene", y="Archetype", fill="TF Activation\nt-value")
+)
+p.save(figure_dir / "tf_activation_tile_plot.pdf", verbose=False)
+
+########################################################################
+# Characterize archetypal pathway activation (using progeny)
+########################################################################
+collectri = dc.op.progeny(organism="human")
+progeny_acts_ulm_est, progeny_acts_ulm_est_p = dc.mt.ulm(
+    data=archetype_expression, net=collectri, verbose=False
+)
+
+df_1 = progeny_acts_ulm_est.reset_index(names="archetype").melt(
+    id_vars="archetype", var_name="pathway", value_name="t_value"
+)
+df_2 = progeny_acts_ulm_est_p.reset_index(names="archetype").melt(
+    id_vars="archetype", var_name="pathway", value_name="p_value"
+)
+progeny_df = df_1.join(
+    df_2.set_index(["archetype", "pathway"]), on=["archetype", "pathway"]
+)
+progeny_df.to_csv(output_dir / "progeny_df.csv", index=False)
+del df_1, df_2
+
+########################################################################
+# Characterize archetypal functions using MSigDB hallmarks
+########################################################################
+database = "hallmark"
+min_genes_per_pathway = 5
+max_genes_per_pathway = np.inf
+msigdb_raw = dc.op.resource("MSigDB")
+msigdb_raw = msigdb_raw[~msigdb_raw.duplicated(["geneset", "genesymbol"])].copy()
+
+msigdb = msigdb_raw[msigdb_raw["collection"] == database]
+genesets_within_min = (
+    (msigdb.value_counts("geneset") >= min_genes_per_pathway)
+    .reset_index()
+    .query("count")["geneset"]
+    .to_list()
+)
+genesets_within_max = (
+    (msigdb.value_counts("geneset") <= max_genes_per_pathway)
+    .reset_index()
+    .query("count")["geneset"]
+    .to_list()
+)
+genesets_to_keep = list(set(genesets_within_min) & set(genesets_within_max))
+msigdb = msigdb.loc[
+    msigdb["geneset"].isin(genesets_to_keep), :
+].copy()  # removing small gene sets
+msigdb = msigdb.rename(
+    columns={"geneset": "source", "genesymbol": "target"}
+)  # required since decoupler >= 2.0.0
+
+hallmark_acts_ulm_est, hallmark_acts_ulm_est_p = dc.mt.ulm(
+    data=archetype_expression, net=msigdb, verbose=False
+)
+df_t = hallmark_acts_ulm_est.reset_index(names="archetype").melt(
+    id_vars="archetype", var_name="hallmark", value_name="t_value"
+)
+df_p = hallmark_acts_ulm_est_p.reset_index(names="archetype").melt(
+    id_vars="archetype", var_name="hallmark", value_name="p_value"
+)
+hallmark_df = df_t.merge(df_p, on=["archetype", "hallmark"], how="inner")
+hallmark_df.to_csv(output_dir / "hallmark_df.csv", index=False)
+del df_t, df_p
+
+hallmark_df["archetype"] = hallmark_df["archetype"].astype(str)
+
+# Selection that guarantees hallmarks for every archetype
+n_per_arch = 5
+mode = "pos"
+p_cutoff = 0.05
+
+sel_df = hallmark_df.copy()
+
+if p_cutoff is not None:
+    sel_df = sel_df.loc[sel_df["p_value"] <= p_cutoff, :].copy()
+
+if mode == "pos":
+    sel_df = sel_df.loc[sel_df["t_value"] > 0, :].copy()
+    sel_df["score"] = sel_df["t_value"]
+elif mode == "abs":
+    sel_df["score"] = sel_df["t_value"].abs()
+else:
+    raise ValueError("mode must be one of {'pos', 'abs'}")
+
+top_per_arch = (
+    sel_df.sort_values("score", ascending=False)
+    .groupby("archetype", group_keys=False)
+    .head(n_per_arch)
+)
+
+top_hallmarks = top_per_arch["hallmark"].unique().tolist()
+
+plot_df = hallmark_df.loc[hallmark_df["hallmark"].isin(top_hallmarks), :].copy()
+
+wide = plot_df.pivot(index="archetype", columns="hallmark", values="t_value")
+
+wide = wide.loc[[str(i) for i in range(4)], :]
+
+# Data-driven ordering by clustering hallmarks (optimal leaf ordering)
+col_linkage = sch.linkage(
+    pdist(wide.T, metric="euclidean"),
+    method="average",
+    optimal_ordering=True,
+)
+hallmark_order = wide.columns[sch.leaves_list(col_linkage)].tolist()
+
+arch_order = [str(i) for i in range(4)]
+
+label_map = {h: h.replace("HALLMARK_", "") for h in hallmark_order}
+plot_df["hallmark"] = pd.Categorical(
+    plot_df["hallmark"], categories=hallmark_order, ordered=True
+)
+plot_df["hallmark_label"] = plot_df["hallmark"].map(label_map)
+plot_df["archetype"] = pd.Categorical(
+    plot_df["archetype"], categories=arch_order, ordered=True
+)
+
+p = (
+    pn.ggplot(plot_df, pn.aes(x="hallmark_label", y="archetype", fill="t_value"))
+    + pn.geom_tile()
+    + pn.scale_fill_gradient2(
+        low="#2166AC",
+        mid="#FFFFFF",
+        high="#B2182B",
+        midpoint=0,
+        oob=squish,
+    )
+    + pn.theme_bw()
+    + pn.theme(
+        axis_text_x=pn.element_text(rotation=90, ha="center"),
+        figure_size=(9, 6),
+    )
+    + pn.labs(x="Hallmark", y="Archetype", fill="Hallmark Enrichment\nt-value")
+)
+
+p.show()
 
 ########################################################################
 # Save processed adata object (for now both on sds and locally)

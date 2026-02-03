@@ -21,6 +21,7 @@ import scipy.cluster.hierarchy as sch
 from scipy.spatial.distance import pdist
 import harmonypy as hm
 from scipy.optimize import linear_sum_assignment
+from scipy.stats import ttest_ind
 
 
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, DATA_PATH
@@ -598,7 +599,10 @@ p = (
 p.save(figure_dir / "patient_pseudobulk_distance_boxplot.pdf", verbose=False)
 p.show()
 
-# 8) prepare covariates
+# 8) saving
+obs_agg.to_csv(output_dir / "obs_aggregated.csv", index=False)
+
+# 9) prepare covariates
 cat_covars = [c for c in base_covars if str(obs_agg[c].dtype) in ("object", "category")]
 num_covars = [c for c in base_covars if c not in cat_covars]
 
@@ -623,7 +627,42 @@ if len(na_counts) > 0:
         "Missing values detected in regression inputs:\n" + na_counts.to_string()
     )
 
-# binary outcome regression
+# a) Welch's t-test
+dist_cols = [c for c in obs_agg.columns if c.startswith("dist_to_arch_")]
+g0, g1 = "NF", "CM"
+
+# ---------------------------
+rows = []
+for c in dist_cols:
+    x = obs_agg.loc[obs_agg["disease"] == g0, c].astype(float).dropna().to_numpy()
+    y = obs_agg.loc[obs_agg["disease"] == g1, c].astype(float).dropna().to_numpy()
+
+    tstat, pval = ttest_ind(x, y, equal_var=False, nan_policy="omit")  # Welch
+
+    rows.append(
+        {
+            "dist_col": c,
+            "group0": g0,
+            "group1": g1,
+            "n0": x.size,
+            "n1": y.size,
+            "mean0": np.mean(x) if x.size else np.nan,
+            "mean1": np.mean(y) if y.size else np.nan,
+            "diff_mean_0_minus_1": (np.mean(x) - np.mean(y))
+            if (x.size and y.size)
+            else np.nan,
+            "t": tstat,
+            "p": pval,
+        }
+    )
+
+ttest_results = pd.DataFrame(rows)
+reject, qvals, _, _ = multipletests(ttest_results["p"].values, alpha=0.05, method="fdr_bh")
+ttest_results["q"] = qvals
+ttest_results["reject_fdr_0p05"] = reject
+ttest_results.to_csv(output_dir / "ttest_results.csv", index=False)
+
+# b) binary outcome regression
 obs_agg["outcome"] = (obs_agg[y_col] == y_col_one).astype(int)
 obs_agg["outcome"].value_counts()
 

@@ -1,5 +1,8 @@
 # manual download from here: https://singlecell.broadinstitute.org/single_cell/study/SCP1303/single-nuclei-profiling-of-human-dilated-and-hypertrophic-cardiomyopathy
 # paper reference: https://www.nature.com/articles/s41586-022-04817-8
+# other papers
+# 1) https://www.nature.com/articles/s41586-021-03549-5
+# 2) 
 # see Leo's analysis here: https://github.com/saezlab/best_practices_ParTIpy/tree/main
 from pathlib import Path
 import argparse
@@ -53,8 +56,16 @@ color_dict = {
     "NF": "#01665E",  # teal (blue-green)
     "CM": "#8C510A",  # brown
 }
+
 ########################################################################
-# Generic marker genes in cardio biology
+# General Configuration
+########################################################################
+n_archetypes = 3
+obsm_key = "X_pca_harmony"
+obsm_dim = 16
+
+########################################################################
+# Generic marker genes in cardio biology to check that data is clean
 ########################################################################
 marker_dict_generic = {
     "Fibroblast": [
@@ -95,129 +106,127 @@ marker_dict_generic = {
 ########################################################################
 marker_blocks = {
     0: {
-        "function": "quiescent / signaling; axon-guidance & ion-channel enriched",
+        # Archetype 0
+        "function": (
+            "Activated fibrotic ECM fibroblasts / matrifibrocytes. "
+            "High matrix production, ECM remodeling, tissue stiffening, "
+            "and activated mesenchymal programs."
+        ),
         "genes": [
-            "NRP1",
-            "CNTNAP2",
-            "SLIT3",
-            "KCND2",
-            "KCND3",
-            "CACNA2D3",
-            "ANK3",
-            "FBLN1",
-            # "LSAMP",
-            # "NAV3",
-            # "FLRT2",
-            # "GRID2",
-            # "ANK2",
-            # "PDZRN4",
-            # "SMAD6",
-            # "BICC1",
+            # --- Core fibrotic ECM genes ---
+            "POSTN",   # periostin; canonical activated fibroblast / matrifibrocyte marker
+            "FGF14",   # strong archetype-specific marker in your data; distinguishes this activated state
+            "FN1",     # fibronectin; provisional ECM, wound repair
+            "COL1A1",  # fibrillar collagen; bulk fibrosis
+            "VCAN",    # versican; provisional ECM, tissue remodeling
+            "TNC",     # tenascin C; injury-induced ECM, mechanotransduction
+            "LOXL1",   # collagen crosslinking; matrix stiffening
+
+            # --- Pro-fibrotic signaling / matrix turnover ---
+            "CCN2",    # CTGF; downstream TGF-β effector, fibrosis amplification
+            "MRC2",    # collagen internalization / ECM turnover (kept as boundary marker)
         ],
         "TFs": [
-            "NR2F2",  # vascular / mesenchymal lineage
-            "EMX2",  # developmental patterning
-            "SP1",  # basal transcription / promoter occupancy
-            "LMO2",  # lineage regulation
-            "BRCA1",  # genome integrity / quiescence
-            "PROX1",  # fibroblast / vascular identity
-            "TP53",  # stress surveillance
-            "SRF",  # structural maintenance (low-activation context)
+            # --- Mesenchymal activation / myofibroblast programs ---
+            "TWIST1",  # EMT / mesenchymal reprogramming, fibroblast activation
+            "SCX",     # tendon-like / myofibroblast lineage program
+            "JUNB",    # immediate-early AP-1 factor; activation and stress response
+
+            # --- Chromatin-level activation ---
+            "KAT6A",   # histone acetyltransferase; permissive chromatin for activation
+            "KDM2A",   # histone demethylase; chromatin remodeling in activation
+
+            # --- Positional / developmental memory ---
+            "HOXA5",   # fibroblast positional identity; often reactivated in fibrosis
         ],
     },
+
     1: {
-        "function": "perivascular / vessel-associated fibroblasts",
+        # Archetype 1
+        "function": (
+            "Stress-responsive / regulatory fibroblasts. "
+            "Integrates TGF-β sensing with glucocorticoid, hypoxia, "
+            "oxidative stress, and inflammatory signaling."
+        ),
         "genes": [
-            "COL15A1",
-            "COLEC12",
-            "FREM1",
-            "PDE5A",
-            "KCNMB2",
-            "KCNN3",
-            "SOX6",
-            "TCF4",
+            # --- Direct stress-response markers ---
+            "FKBP5",    # glucocorticoid receptor target; stress hormone responsiveness
+            "PPARG",    # metabolic regulation; anti-fibrotic / regulatory axis
+            "FOXO1",    # stress tolerance, quiescence vs activation balance
+
+            # --- TGF-β sensing machinery ---
+            "TGFBR2",   # TGF-β receptor II
+            "TGFBR3",   # co-receptor; fine-tunes TGF-β sensitivity
+            "SMAD3",    # canonical TGF-β signal transducer
+
+            # --- Canonical TGF-β output ---
+            "SERPINE1", # PAI-1; classic TGF-β–induced stress/fibrosis gene
         ],
         "TFs": [
-            "RORA",  # niche / circadian modulation
-            "LHX3",  # developmental patterning
-            "ATOH1",  # differentiation control
-            "MKX",  # fibroblast identity restraint
-            "ETV6",  # vascular-associated regulation
-            "KLF17",  # anti-activation TF
-            "NEUROD2",  # positional identity reuse
-            "HOXA5",  # anterior–posterior patterning
+            # --- Hormonal stress axis ---
+            "NR3C1",   # glucocorticoid receptor; dominant stress regulator
+
+            # --- Hypoxia / injury ---
+            "HIF1A",   # hypoxia sensing; ischemic and fibrotic stress
+
+            # --- Inflammatory integration ---
+            "NFKB",    # inflammatory master regulator
+            "CEBPB",   # inflammatory and stress-responsive transcription
+
+            # --- Metabolic scaling ---
+            "MYC",     # metabolic and biosynthetic scaling under stress
+
+            # --- Oxidative stress defense ---
+            "NFE2L2",  # NRF2; redox and detoxification response
         ],
     },
+
     2: {
-        "function": "activated fibroblast → myofibroblast / matrifibrocyte axis (fibrotic ECM)",
+        # Archetype 2
+        "function": (
+            "Perivascular / basement-membrane fibroblasts. "
+            "Vascular-adjacent niche, laminin-rich ECM, "
+            "structural support rather than bulk fibrosis."
+        ),
         "genes": [
-            "POSTN",
-            "THBS4",
-            "FAP",
-            "COL22A1",
-            "AEBP1",
-            "ITGA10",
-            "LTBP2",
-            "WISP2",
+            # --- Basement membrane / vascular niche ECM ---
+            "COL15A1", # perivascular fibroblast hallmark
+            "COLEC12", # endothelial / perivascular adjacency
+            "SMOC2",   # basement membrane-associated ECM protein
+            "LAMB1",   # laminin beta chain; basement membrane
+            "LAMC1",   # laminin gamma chain
+
+            # --- Boundary marker ---
+            "RGS5",    # pericyte-adjacent marker (kept to define interface, not identity)
         ],
         "TFs": [
-            "MYF5",  # deep mesenchymal program
-            "TWIST1",  # EMT / activation
-            "BHLHA15",  # differentiation switch
-            "SCX",  # myofibroblast / tendon-like program
-            "SRF",  # contractility (high-activation context)
-            "KDM2A",  # chromatin remodeling
-            "KAT6A",  # histone acetylation
-            "JUNB",  # immediate-early activation
-        ],
-    },
-    3: {
-        "function": "stress-responsive / metabolic activation (redox, hypoxia, detox)",
-        "genes": [
-            "FKBP5",
-            "HIF3A",
-            "TXNRD1",
-            "GPX3",
-            "NNMT",
-            "MGST1",
-            "CFD",
-            "GLUL",
-            # "ADH1B",
-        ],
-        "TFs": [
-            "NR3C1",  # glucocorticoid stress response (strongest overall)
-            "HIF1A",  # hypoxia
-            "PPARD",  # lipid metabolism
-            "NFKB",  # inflammation
-            "CEBPB",  # inflammatory transcription
-            "MYC",  # metabolic scaling
-            "NFE2L2",  # oxidative stress (NRF2)
-            "FOXO3",  # stress resilience
+            # --- Niche / positional identity ---
+            "RORA",    # circadian / niche regulation; strong arch_2 signal
+            "ATOH1",   # differentiation / lineage control
+            "LHX3",    # developmental positional program
+            "KLF17",   # anti-activation, maintains non-fibrotic state
+
+            # --- Vascular / mesenchymal identity ---
+            "NR2F2",   # COUP-TFII; vascular-adjacent fibroblast identity
+            "PROX1",   # lymphatic / vascular niche transcriptional memory
         ],
     },
 }
+
+# ---------------------------------------------------------------------
+# Derive ordered gene_list and tf_list for plotting (deduplicated)
+# ---------------------------------------------------------------------
 gene_list = []
-for a in [0, 1, 2, 3]:
+for a in range(n_archetypes):
     gene_list += marker_blocks[a]["genes"]
-# de-duplicate while preserving order
 seen = set()
 gene_list = [g for g in gene_list if not (g in seen or seen.add(g))]
 
-tf_list = [tf for a in [0, 1, 2, 3] for tf in marker_blocks[a]["TFs"]]
+tf_list = []
+for a in range(n_archetypes):
+    tf_list += marker_blocks[a]["TFs"]
 seen = set()
 tf_list = [tf for tf in tf_list if not (tf in seen or seen.add(tf))]
-
-########################################################################
-# Setup prior knowledge marker TFs and pathways
-########################################################################
-fibro_tf_dict = {
-    "quiescent-like": [
-        "NR3C1",
-        "PPARA",
-        "PPARD",
-        "FOXO3",
-    ]
-}
 
 ########################################################################
 # Plotting helper
@@ -300,7 +309,10 @@ _ = sc.pl.dotplot(
 # integration using harmony
 ho = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id")
 adata.obsm["X_pca_harmony"] = ho.Z_corr.copy()
-del ho
+
+ho2 = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id", tau=1e3)
+adata.obsm["X_pca_harmony_tau1e3"] = ho2.Z_corr.copy()
+del ho, ho2
 
 ########################################################################
 # Determine the number of principal components to consider for AA
@@ -312,7 +324,7 @@ if not args.quick:
 else:
     print("Skipping shuffled PCA because --quick was set.")
 
-pt.set_obsm(adata=adata, obsm_key="X_pca_harmony", n_dimensions=16)
+pt.set_obsm(adata=adata, obsm_key=obsm_key, n_dimensions=obsm_dim)
 
 ########################################################################
 # Determine the number of archetypes
@@ -333,24 +345,29 @@ if not args.quick:
     p = pt.plot_bootstrap_variance(adata) + pn.theme_bw()
     p.save(figure_dir / "plot_bootstrap_variance.pdf", verbose=False)
 
-    p = (
-        pt.plot_archetypes_2D(
-            adata=adata,
-            show_contours=True,
-            result_filters={"n_archetypes": 4},
-            alpha=0.05,
-        )
-        + pn.theme_bw()
-    )
-    p.save(figure_dir / "plot_archetypes_2D.pdf", verbose=False)
-    p.save(figure_dir / "plot_archetypes_2D.png", verbose=False)
-
-    p = pt.plot_bootstrap_2D(adata, result_filters={"n_archetypes": 4}) + pn.theme_bw()
-    p.save(figure_dir / "plot_bootstrap_2D.pdf", verbose=False)
-    p.save(figure_dir / "plot_bootstrap_2D.png", verbose=False)
 else:
-    pt.compute_bootstrap_variance(adata=adata, n_bootstrap=50, n_archetypes_list=[4])
+    pt.compute_bootstrap_variance(
+        adata=adata, n_bootstrap=50, n_archetypes_list=[n_archetypes]
+    )
     print("Skipping archetype selection metrics because --quick was set.")
+p = (
+    pt.plot_archetypes_2D(
+        adata=adata,
+        show_contours=True,
+        result_filters={"n_archetypes": n_archetypes},
+        alpha=0.05,
+    )
+    + pn.theme_bw()
+)
+p.save(figure_dir / "plot_archetypes_2D.pdf", verbose=False)
+p.save(figure_dir / "plot_archetypes_2D.png", verbose=False)
+
+p = (
+    pt.plot_bootstrap_2D(adata, result_filters={"n_archetypes": n_archetypes})
+    + pn.theme_bw()
+)
+p.save(figure_dir / "plot_bootstrap_2D.pdf", verbose=False)
+p.save(figure_dir / "plot_bootstrap_2D.png", verbose=False)
 
 ########################################################################
 # Some 2D plots
@@ -363,7 +380,7 @@ p = (
         color="disease",
         alpha=0.05,
         size=0.5,
-        result_filters={"n_archetypes": 4},
+        result_filters={"n_archetypes": n_archetypes},
     )
     + pn.theme_bw()
     + pn.scale_color_manual(values=color_dict)
@@ -379,7 +396,7 @@ p = (
         color="disease",
         alpha=0.05,
         size=0.5,
-        result_filters={"n_archetypes": 4},
+        result_filters={"n_archetypes": n_archetypes},
     )
     + pn.theme_bw()
     + pn.scale_color_manual(values=color_dict)
@@ -395,7 +412,7 @@ p = (
         color="disease",
         alpha=0.05,
         size=0.5,
-        result_filters={"n_archetypes": 4},
+        result_filters={"n_archetypes": n_archetypes},
     )
     + pn.theme_bw()
     + pn.scale_color_manual(values=color_dict)
@@ -407,33 +424,37 @@ p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2.png", verbose=False)
 # Some enrichment bar plots
 ########################################################################
 pt.compute_archetype_weights(
-    adata=adata, mode="automatic", result_filters={"n_archetypes": 4}
+    adata=adata, mode="automatic", result_filters={"n_archetypes": n_archetypes}
 )
 # NOTE: here we make sure that the weights per archetype sums to one
-weights = pt.get_aa_cell_weights(adata, n_archetypes=4)
+weights = pt.get_aa_cell_weights(adata, n_archetypes=n_archetypes)
 weights /= weights.sum(axis=0, keepdims=True)
 assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
 
 disease_enrichment = pt.compute_meta_enrichment(
-    adata=adata, meta_col="disease", result_filters={"n_archetypes": 4}
+    adata=adata, meta_col="disease", result_filters={"n_archetypes": n_archetypes}
 )
 p = pt.barplot_meta_enrichment(disease_enrichment, color_map=color_dict) + pn.theme_bw()
 p.save(figure_dir / "barplot_meta_enrichment_disease.pdf", verbose=False)
 
 disease_orginal_enrichment = pt.compute_meta_enrichment(
-    adata=adata, meta_col="disease_original", result_filters={"n_archetypes": 4}
+    adata=adata,
+    meta_col="disease_original",
+    result_filters={"n_archetypes": n_archetypes},
 )
 p = pt.barplot_meta_enrichment(disease_orginal_enrichment) + pn.theme_bw()
 p.save(figure_dir / "barplot_meta_enrichment_disease_original.pdf", verbose=False)
 
 ct_enrichment = pt.compute_meta_enrichment(
-    adata=adata, meta_col="cell_type_leiden0.6", result_filters={"n_archetypes": 4}
+    adata=adata,
+    meta_col="cell_type_leiden0.6",
+    result_filters={"n_archetypes": n_archetypes},
 )
 p = pt.barplot_meta_enrichment(ct_enrichment) + pn.theme_bw()
 p.save(figure_dir / "barplot_meta_enrichment_celltypes_original.pdf", verbose=False)
 
 cs_enrichment = pt.compute_meta_enrichment(
-    adata=adata, meta_col="SubCluster", result_filters={"n_archetypes": 4}
+    adata=adata, meta_col="SubCluster", result_filters={"n_archetypes": n_archetypes}
 )
 p = pt.barplot_meta_enrichment(cs_enrichment) + pn.theme_bw()
 p.save(figure_dir / "barplot_meta_enrichment_cellstate_original.pdf", verbose=False)
@@ -457,7 +478,7 @@ for c in base_covars:
         adata.obs[c] = adata.obs[c].astype("category")
 
 # 1) get the archetypes
-aa_results_dict = pt.get_aa_result(adata, n_archetypes=4)
+aa_results_dict = pt.get_aa_result(adata, n_archetypes=n_archetypes)
 Z = aa_results_dict["Z"].copy().astype(np.float32)
 archetype_df = pd.DataFrame(
     Z, columns=[f"pc_{arch_idx}" for arch_idx in range(Z.shape[1])]
@@ -569,7 +590,7 @@ p = (
         size=2,
         alpha=0.5,
     )
-    + pn.facet_wrap("variable_clean", ncol=4)
+    + pn.facet_wrap("variable_clean", ncol=n_archetypes)
     + pn.scale_color_manual(values=color_dict)
     + pn.theme_bw()
     + pn.theme(
@@ -586,7 +607,7 @@ p = (
     + pn.geom_boxplot(
         pn.aes(x="disease", y="value", color="disease"),
     )
-    + pn.facet_wrap("variable_clean", ncol=4)
+    + pn.facet_wrap("variable_clean", ncol=n_archetypes)
     + pn.scale_color_manual(values=color_dict)
     + pn.theme_bw()
     + pn.theme(
@@ -657,7 +678,9 @@ for c in dist_cols:
     )
 
 ttest_results = pd.DataFrame(rows)
-reject, qvals, _, _ = multipletests(ttest_results["p"].values, alpha=0.05, method="fdr_bh")
+reject, qvals, _, _ = multipletests(
+    ttest_results["p"].values, alpha=0.05, method="fdr_bh"
+)
 ttest_results["q"] = qvals
 ttest_results["reject_fdr_0p05"] = reject
 ttest_results.to_csv(output_dir / "ttest_results.csv", index=False)
@@ -801,24 +824,53 @@ uni_df.to_csv(output_dir / "disease_enrichment.csv", index=False)
 # Characterize archetypal gene expression
 ########################################################################
 gene_mask = adata.var.index[adata.var["n_cells"] > 100].to_list()
-archetype_expression = pt.compute_archetype_expression(adata=adata, layer="z_scaled")[
-    gene_mask
-]
 
-arch_expr_long = archetype_expression.copy().T
-arch_expr_long.columns = [f"arch_{c}" for c in arch_expr_long.columns]
-arch_expr_long = arch_expr_long.reset_index(names="gene")
-arch_expr_long = arch_expr_long.melt(id_vars="gene")
-arch_expr_long.to_csv(output_dir / "archetype_expression.csv", index=False)
+arch_expr = {
+    "raw": pt.compute_archetype_expression(adata=adata, layer="cellranger_raw")[
+        gene_mask
+    ],
+    "log1p": pt.compute_archetype_expression(adata=adata, layer=None)[
+        gene_mask
+    ],  # assumes log1p in .X
+    "z_scaled": pt.compute_archetype_expression(adata=adata, layer="z_scaled")[
+        gene_mask
+    ],
+}
+
+long_parts = []
+for scale, df_wide in arch_expr.items():
+    part = (
+        df_wide.rename_axis(index="archetype")  # name index
+        .reset_index()  # archetype column
+        .melt(id_vars="archetype", var_name="gene", value_name="value")
+    )
+    part["archetype"] = part["archetype"].map(lambda a: f"arch_{a}")  # optional
+    part["scale"] = scale
+    long_parts.append(part)
+
+arch_expr_long = pd.concat(long_parts, ignore_index=True)
+
+arch_expr_long = arch_expr_long.pivot_table(
+    values="value", index=["archetype", "gene"], columns="scale"
+).reset_index()
+arch_expr_long.columns.name = None
+
+# Optional: stable column order
+col_order = ["archetype", "gene", "raw", "log1p", "z_scaled"]
+arch_expr_long = arch_expr_long.reindex(
+    columns=[c for c in col_order if c in arch_expr_long.columns]
+)
+
+arch_expr_long.to_csv(output_dir / "archetype_expression_pivot.csv", index=False)
 
 plot_df = arch_expr_long.loc[arch_expr_long["gene"].isin(gene_list), :].copy()
 plot_df["gene"] = pd.Categorical(plot_df["gene"], categories=gene_list, ordered=True)
-arch_order = [f"arch_{idx}" for idx in range(4)]
-plot_df["variable"] = pd.Categorical(
-    plot_df["variable"], categories=arch_order, ordered=True
+arch_order = [f"arch_{idx}" for idx in range(n_archetypes)]
+plot_df["archetype"] = pd.Categorical(
+    plot_df["archetype"], categories=arch_order, ordered=True
 )
 p = (
-    pn.ggplot(plot_df, pn.aes(x="gene", y="variable", fill="value"))
+    pn.ggplot(plot_df, pn.aes(y="gene", x="archetype", fill="z_scaled"))
     + pn.geom_tile()
     + pn.scale_fill_gradient2(
         low="#2166AC",
@@ -830,10 +882,9 @@ p = (
     )
     + pn.theme_bw()
     + pn.theme(
-        axis_text_x=pn.element_text(rotation=90, ha="center"),
-        figure_size=(9, 3),
+        figure_size=(3, 9),
     )
-    + pn.labs(x="Gene", y="Archetype", fill="Mean z-scored\nGene Expression")
+    + pn.labs(y="Gene", x="Archetype", fill="Mean z-scored\nGene Expression")
 )
 p.save(figure_dir / "gene_expression_tile_plot.pdf", verbose=False)
 
@@ -842,7 +893,7 @@ p.save(figure_dir / "gene_expression_tile_plot.pdf", verbose=False)
 ########################################################################
 collectri = dc.op.collectri(organism="human")
 collectri_acts_ulm_est, collectri_acts_ulm_est_p = dc.mt.ulm(
-    data=archetype_expression, net=collectri, verbose=False
+    data=arch_expr["z_scaled"], net=collectri, verbose=False
 )
 
 df_1 = collectri_acts_ulm_est.reset_index(names="archetype").melt(
@@ -858,18 +909,18 @@ del df_1, df_2
 plot_df = collectri_df
 plot_df = plot_df.loc[plot_df["TF"].isin(tf_list), :].copy()
 plot_df["TF"] = pd.Categorical(plot_df["TF"], categories=tf_list, ordered=True)
-arch_order = [f"{idx}" for idx in range(4)]
+arch_order = [f"{idx}" for idx in range(n_archetypes)]
 plot_df["archetype"] = pd.Categorical(
     plot_df["archetype"], categories=arch_order, ordered=True
 )
 p_sig = 0.05
 sig_df = plot_df.loc[plot_df["p_value"] <= p_sig].copy()
 p = (
-    pn.ggplot(plot_df, pn.aes(x="TF", y="archetype", fill="t_value"))
+    pn.ggplot(plot_df, pn.aes(y="TF", x="archetype", fill="t_value"))
     + pn.geom_tile()
     + pn.geom_text(
         data=sig_df,
-        mapping=pn.aes(x="TF", y="archetype"),
+        mapping=pn.aes(y="TF", x="archetype"),
         label="x",
         size=8,
         color="black",
@@ -883,8 +934,7 @@ p = (
     )
     + pn.theme_bw()
     + pn.theme(
-        axis_text_x=pn.element_text(rotation=90, ha="center"),
-        figure_size=(9, 3),
+        figure_size=(3, 9),
     )
     + pn.labs(x="Gene", y="Archetype", fill="TF Activation\nt-value")
 )
@@ -895,7 +945,7 @@ p.save(figure_dir / "tf_activation_tile_plot.pdf", verbose=False)
 ########################################################################
 collectri = dc.op.progeny(organism="human")
 progeny_acts_ulm_est, progeny_acts_ulm_est_p = dc.mt.ulm(
-    data=archetype_expression, net=collectri, verbose=False
+    data=arch_expr["z_scaled"], net=collectri, verbose=False
 )
 
 df_1 = progeny_acts_ulm_est.reset_index(names="archetype").melt(
@@ -911,7 +961,7 @@ progeny_df.to_csv(output_dir / "progeny_df.csv", index=False)
 del df_1, df_2
 
 plot_df = progeny_df.copy()
-arch_order = [f"{idx}" for idx in range(4)]
+arch_order = [f"{idx}" for idx in range(n_archetypes)]
 plot_df["archetype"] = pd.Categorical(
     plot_df["archetype"].astype(str), categories=arch_order, ordered=True
 )
@@ -933,11 +983,11 @@ plot_df["pathway"] = pd.Categorical(
 sig_df = plot_df.loc[plot_df["p_value"] <= p_sig].copy()
 
 p = (
-    pn.ggplot(plot_df, pn.aes(x="pathway", y="archetype", fill="t_value"))
+    pn.ggplot(plot_df, pn.aes(y="pathway", x="archetype", fill="t_value"))
     + pn.geom_tile()
     + pn.geom_text(
         data=sig_df,
-        mapping=pn.aes(x="pathway", y="archetype"),
+        mapping=pn.aes(y="pathway", x="archetype"),
         label="x",
         size=8,
         color="black",
@@ -951,10 +1001,9 @@ p = (
     )
     + pn.theme_bw()
     + pn.theme(
-        axis_text_x=pn.element_text(rotation=90, ha="center"),
-        figure_size=(9, 6),
+        figure_size=(6, 9),
     )
-    + pn.labs(x="Pathway", y="Archetype", fill="Progeny Enrichment\nt-value")
+    + pn.labs(y="Pathway", x="Archetype", fill="Progeny Enrichment\nt-value")
 )
 p.save(figure_dir / "progeny_tile_plot.pdf", verbose=False)
 
@@ -987,7 +1036,7 @@ msigdb = msigdb.rename(
 )  # required since decoupler >= 2.0.0
 
 hallmark_acts_ulm_est, hallmark_acts_ulm_est_p = dc.mt.ulm(
-    data=archetype_expression, net=msigdb, verbose=False
+    data=arch_expr["z_scaled"], net=msigdb, verbose=False
 )
 df_t = hallmark_acts_ulm_est.reset_index(names="archetype").melt(
     id_vars="archetype", var_name="hallmark", value_name="t_value"
@@ -1028,10 +1077,8 @@ top_per_arch = (
 top_hallmarks = top_per_arch["hallmark"].unique().tolist()
 
 plot_df = hallmark_df.loc[hallmark_df["hallmark"].isin(top_hallmarks), :].copy()
-
 wide = plot_df.pivot(index="archetype", columns="hallmark", values="t_value")
-
-wide = wide.loc[[str(i) for i in range(4)], :]
+wide = wide.loc[[str(i) for i in range(n_archetypes)], :]
 
 # Data-driven ordering by clustering hallmarks (optimal leaf ordering)
 col_linkage = sch.linkage(
@@ -1041,7 +1088,7 @@ col_linkage = sch.linkage(
 )
 hallmark_order = wide.columns[sch.leaves_list(col_linkage)].tolist()
 
-arch_order = [str(i) for i in range(4)]
+arch_order = [str(i) for i in range(n_archetypes)]
 
 label_map = {h: h.replace("HALLMARK_", "") for h in hallmark_order}
 plot_df["hallmark"] = pd.Categorical(
@@ -1054,11 +1101,11 @@ plot_df["archetype"] = pd.Categorical(
 sig_df = plot_df.loc[plot_df["p_value"] <= p_sig].copy()
 
 p = (
-    pn.ggplot(plot_df, pn.aes(x="hallmark_label", y="archetype", fill="t_value"))
+    pn.ggplot(plot_df, pn.aes(y="hallmark_label", x="archetype", fill="t_value"))
     + pn.geom_tile()
     + pn.geom_text(
         data=sig_df,
-        mapping=pn.aes(x="hallmark_label", y="archetype"),
+        mapping=pn.aes(y="hallmark_label", x="archetype"),
         label="x",
         size=8,
         color="black",
@@ -1072,10 +1119,9 @@ p = (
     )
     + pn.theme_bw()
     + pn.theme(
-        axis_text_x=pn.element_text(rotation=90, ha="center"),
-        figure_size=(9, 6),
+        figure_size=(6, 9),
     )
-    + pn.labs(x="Hallmark", y="Archetype", fill="Hallmark Enrichment\nt-value")
+    + pn.labs(y="Hallmark", x="Archetype", fill="Hallmark Enrichment\nt-value")
 )
 p.save(figure_dir / "hallmark_tile_plot.pdf", verbose=False)
 
@@ -1101,7 +1147,7 @@ matrisome = msigdb_raw.loc[msigdb_raw["geneset"].str.startswith("NABA_"), :].cop
 matrisome = matrisome.loc[~matrisome["geneset"].isin(naba_cancer_sets), :].copy()
 matrisome = matrisome.rename(columns={"geneset": "source", "genesymbol": "target"})
 matrisome_acts_ulm_est, matrisome_acts_ulm_est_p = dc.mt.ulm(
-    data=archetype_expression,
+    data=arch_expr["z_scaled"],
     net=matrisome,
     verbose=False,
 )
@@ -1119,7 +1165,7 @@ matrisome_df.to_csv(output_dir / "matrisome_df.csv", index=False)
 del df_t, df_p
 
 plot_df = matrisome_df.copy()
-arch_order = [f"{idx}" for idx in range(4)]
+arch_order = [f"{idx}" for idx in range(n_archetypes)]
 plot_df["archetype"] = pd.Categorical(
     plot_df["archetype"], categories=arch_order, ordered=True
 )
@@ -1142,11 +1188,11 @@ p_sig = 0.05
 sig_df = plot_df.loc[plot_df["p_value"] <= p_sig].copy()
 
 p = (
-    pn.ggplot(plot_df, pn.aes(x="matrisome_set", y="archetype", fill="t_value"))
+    pn.ggplot(plot_df, pn.aes(y="matrisome_set", x="archetype", fill="t_value"))
     + pn.geom_tile()
     + pn.geom_text(
         data=sig_df,
-        mapping=pn.aes(x="matrisome_set", y="archetype"),
+        mapping=pn.aes(y="matrisome_set", x="archetype"),
         label="x",
         size=8,
         color="black",
@@ -1162,8 +1208,7 @@ p = (
     + pn.theme(
         figure_size=(8.5, 9),
     )
-    + pn.labs(x="Gene", y="Archetype", fill="Matrisome Terms\nt-value")
-    + pn.coord_flip()
+    + pn.labs(y="Gene", x="Archetype", fill="Matrisome Terms\nt-value")
 )
 p.save(figure_dir / "matrisome_tile_plot.pdf", verbose=False)
 
@@ -1195,96 +1240,102 @@ def pearsonr_per_row(mtx_1: np.ndarray, mtx_2: np.ndarray, return_pval: bool = F
 
 gene_mask = adata.var.index[adata.var["n_cells"] > 100].to_list()
 
-adata_default = adata.copy()
-del (
-    adata_default.uns["AA_results"],
-    adata_default.uns["AA_config"],
-    adata_default.uns["AA_bootstrap"],
-    adata_default.uns["AA_cell_weights"],
-    adata_default.uns["AA_pca"],
-    adata_default.uns["AA_selection_metrics"],
-)
-pt.set_obsm(adata=adata_default, obsm_key="X_pca", n_dimensions=16)
-pt.compute_archetypes(adata_default, n_archetypes=4)
-pt.compute_archetype_weights(adata_default, result_filters={"n_archetypes": 4})
-weights = pt.get_aa_cell_weights(adata_default, n_archetypes=4)
-weights /= weights.sum(axis=0, keepdims=True)
-assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
-archetype_expression_default = pt.compute_archetype_expression(
-    adata=adata_default, layer="z_scaled"
-)[gene_mask]
-
-adata_harmony = adata.copy()
-del (
-    adata_harmony.uns["AA_results"],
-    adata_harmony.uns["AA_config"],
-    adata_harmony.uns["AA_bootstrap"],
-    adata_harmony.uns["AA_cell_weights"],
-    adata_harmony.uns["AA_pca"],
-    adata_harmony.uns["AA_selection_metrics"],
-)
-pt.set_obsm(adata=adata_harmony, obsm_key="X_pca_harmony", n_dimensions=16)
-pt.compute_archetypes(adata_harmony, n_archetypes=4)
-pt.compute_archetype_weights(adata_harmony, result_filters={"n_archetypes": 4})
-weights = pt.get_aa_cell_weights(adata_harmony, n_archetypes=4)
-weights /= weights.sum(axis=0, keepdims=True)
-assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
-archetype_expression_harmony = pt.compute_archetype_expression(
-    adata=adata_harmony, layer="z_scaled"
-)[gene_mask]
-
-dist = cdist(
-    archetype_expression_default, archetype_expression_harmony, metric="correlation"
-)
-corr = 1 - dist
-_ref_idx, query_idx = linear_sum_assignment(dist)
-
-archetype_expression_aligned_a = (
-    archetype_expression_default.loc[_ref_idx, :].to_numpy().copy()
-)
-archetype_expression_aligned_b = (
-    archetype_expression_harmony.loc[query_idx, :].to_numpy().copy()
-)
-
-pearson_r, pearson_pvals = pearsonr_per_row(
-    archetype_expression_aligned_a, archetype_expression_aligned_b, return_pval=True
-)
-
-plot_df = (
-    pd.DataFrame(
-        corr[:, query_idx],
-        index=[f"ref_arch_{idx}" for idx in range(4)],
-        columns=[f"query_arch_{idx}" for idx in range(4)],
+keys_to_delete = [
+    "AA_results",
+    "AA_config",
+    "AA_bootstrap",
+    "AA_cell_weights",
+    "AA_selection_metrics",
+]
+for n_archetypes_test in [3, 4]:
+    adata_default = adata.copy()
+    for k in keys_to_delete:
+        if k in adata_default.uns:
+            del adata_default.uns[k]
+    pt.set_obsm(adata=adata_default, obsm_key="X_pca", n_dimensions=16)
+    pt.compute_archetypes(adata_default, n_archetypes=n_archetypes_test)
+    pt.compute_archetype_weights(
+        adata_default,
+        result_filters={"n_archetypes": n_archetypes_test, "obsm_key": "X_pca"},
     )
-    .reset_index(names="x")
-    .melt(id_vars="x", var_name="y", value_name="correlation")
-)
-plot_df = (
-    pd.DataFrame(
-        corr[:, query_idx],
-        index=[f"arch_{idx}" for idx in range(4)],
-        columns=[f"arch_{idx}" for idx in range(4)],
+    weights = pt.get_aa_cell_weights(
+        adata_default, n_archetypes=n_archetypes_test, obsm_key="X_pca"
     )
-    .reset_index(names="x")
-    .melt(id_vars="x", var_name="y", value_name="correlation")
-)
-p = (
-    pn.ggplot(plot_df)
-    + pn.geom_tile(pn.aes(x="x", y="y", fill="correlation"))
-    + pn.geom_text(pn.aes(x="x", y="y", label="correlation"), format_string="{:.2f}")
-    + pn.scale_fill_gradient2(
-        low="#2166AC",
-        mid="#FFFFFF",
-        high="#B2182B",
-        midpoint=0,
-        limits=(-1.0, 1.0),
-        oob=squish,
+    weights /= weights.sum(axis=0, keepdims=True)
+    assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
+    archetype_expression_default = pt.compute_archetype_expression(
+        adata=adata_default,
+        layer="z_scaled",
+        result_filters={"n_archetypes": n_archetypes_test},
+    )[gene_mask]
+
+    adata_harmony = adata.copy()
+    for k in keys_to_delete:
+        if k in adata_harmony.uns:
+            del adata_harmony.uns[k]
+    pt.set_obsm(adata=adata_harmony, obsm_key="X_pca_harmony", n_dimensions=16)
+    pt.compute_archetypes(adata_harmony, n_archetypes=n_archetypes_test)
+    pt.compute_archetype_weights(
+        adata_harmony,
+        result_filters={"n_archetypes": n_archetypes_test, "obsm_key": "X_pca_harmony"},
     )
-    + pn.labs(
-        x="Archetypes based on X_pca",
-        y="Archetypes based on X_pca_harmony",
-        fill="Gene Expression\nCorrelation",
+    weights = pt.get_aa_cell_weights(
+        adata_harmony, n_archetypes=n_archetypes_test, obsm_key="X_pca_harmony"
     )
-)
-p.save(figure_dir / "aa_with_and_without_harmony.pdf")
-del plot_df
+    weights /= weights.sum(axis=0, keepdims=True)
+    assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
+    archetype_expression_harmony = pt.compute_archetype_expression(
+        adata=adata_harmony,
+        layer="z_scaled",
+        result_filters={"n_archetypes": n_archetypes_test},
+    )[gene_mask]
+
+    dist = cdist(
+        archetype_expression_default, archetype_expression_harmony, metric="correlation"
+    )
+    corr = 1 - dist
+    _ref_idx, query_idx = linear_sum_assignment(dist)
+
+    archetype_expression_aligned_a = (
+        archetype_expression_default.loc[_ref_idx, :].to_numpy().copy()
+    )
+    archetype_expression_aligned_b = (
+        archetype_expression_harmony.loc[query_idx, :].to_numpy().copy()
+    )
+
+    pearson_r, pearson_pvals = pearsonr_per_row(
+        archetype_expression_aligned_a, archetype_expression_aligned_b, return_pval=True
+    )
+
+    plot_df = (
+        pd.DataFrame(
+            corr[:, query_idx],
+            index=[f"{idx}" for idx in range(n_archetypes_test)],
+            columns=[f"{idx}" for idx in range(n_archetypes_test)],
+        )
+        .reset_index(names="x")
+        .melt(id_vars="x", var_name="y", value_name="correlation")
+    )
+    plot_df.to_csv(output_dir / f"aa_with_and_without_harmony_{n_archetypes_test}.csv")
+    p = (
+        pn.ggplot(plot_df)
+        + pn.geom_tile(pn.aes(x="x", y="y", fill="correlation"))
+        + pn.geom_text(
+            pn.aes(x="x", y="y", label="correlation"), format_string="{:.2f}"
+        )
+        + pn.scale_fill_gradient2(
+            low="#2166AC",
+            mid="#FFFFFF",
+            high="#B2182B",
+            midpoint=0,
+            limits=(-1.0, 1.0),
+            oob=squish,
+        )
+        + pn.labs(
+            x="Archetypes based on X_pca",
+            y="Archetypes based on X_pca_harmony",
+            fill="Gene Expression\nCorrelation",
+        )
+    )
+    p.save(figure_dir / f"aa_with_and_without_harmony_{n_archetypes_test}.pdf")
+    del plot_df

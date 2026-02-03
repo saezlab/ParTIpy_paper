@@ -2,6 +2,7 @@
 # paper reference: https://www.nature.com/articles/s41586-022-04817-8
 # see Leo's analysis here: https://github.com/saezlab/best_practices_ParTIpy/tree/main
 from pathlib import Path
+import argparse
 
 import plotnine as pn
 import scanpy as sc
@@ -18,9 +19,21 @@ from mizani.bounds import squish
 import decoupler as dc
 import scipy.cluster.hierarchy as sch
 from scipy.spatial.distance import pdist
+import harmonypy as hm
+from scipy.optimize import linear_sum_assignment
 
 
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, DATA_PATH
+
+parser = argparse.ArgumentParser(
+    description="Fibroblast cross-condition analysis workflow."
+)
+parser.add_argument(
+    "--quick",
+    action="store_true",
+    help="Skip shuffled PCA computation and plotting.",
+)
+args = parser.parse_args()
 
 ########################################################################
 # Setup paths
@@ -220,6 +233,23 @@ for group_label, genes in marker_dict_generic.items():
     var_group_labels.append(group_label)
     start = end + 1
 
+########################################################################
+# Load PK
+########################################################################
+msigdb_cache_path = output_dir / "msigdb_raw.pkl"
+needs_cache_write = False
+if msigdb_cache_path.exists():
+    msigdb_raw = pd.read_pickle(msigdb_cache_path)
+else:
+    msigdb_raw = dc.op.resource("MSigDB")
+    needs_cache_write = True
+
+if msigdb_raw.duplicated(["geneset", "genesymbol"]).any():
+    msigdb_raw = msigdb_raw[~msigdb_raw.duplicated(["geneset", "genesymbol"])].copy()
+    needs_cache_write = True
+
+if needs_cache_write:
+    msigdb_raw.to_pickle(msigdb_cache_path)
 
 ########################################################################
 # Load and process the adata object
@@ -251,7 +281,7 @@ adata.obs["disease"] = adata.obs["disease_original"].map(
 sc.pp.normalize_total(adata)
 sc.pp.log1p(adata)
 sc.pp.highly_variable_genes(adata)
-sc.pp.pca(adata, mask_var="highly_variable")
+sc.pp.pca(adata, mask_var="highly_variable", n_comps=50)
 adata.layers["z_scaled"] = sc.pp.scale(adata.X, max_value=10)
 
 print(adata.obs["disease"].value_counts())
@@ -266,45 +296,60 @@ _ = sc.pl.dotplot(
     save="marker_dotplot.pdf",
 )
 
+# integration using harmony
+ho = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id")
+adata.obsm["X_pca_harmony"] = ho.Z_corr.copy()
+del ho
+
 ########################################################################
 # Determine the number of principal components to consider for AA
 ########################################################################
-pt.compute_shuffled_pca(adata, mask_var="highly_variable", n_shuffle=25)
-p = pt.plot_shuffled_pca(adata) + pn.theme_bw()
-p.save(figure_dir / "plot_shuffled_pca.pdf", verbose=False)
+if not args.quick:
+    pt.compute_shuffled_pca(adata, mask_var="highly_variable", n_shuffle=25)
+    p = pt.plot_shuffled_pca(adata) + pn.theme_bw()
+    p.save(figure_dir / "plot_shuffled_pca.pdf", verbose=False)
+else:
+    print("Skipping shuffled PCA because --quick was set.")
 
-pt.set_obsm(adata=adata, obsm_key="X_pca", n_dimensions=16)
+pt.set_obsm(adata=adata, obsm_key="X_pca_harmony", n_dimensions=16)
 
 ########################################################################
 # Determine the number of archetypes
 ########################################################################
-pt.compute_selection_metrics(adata=adata, n_archetypes_list=range(2, 8))
+if not args.quick:
+    pt.compute_selection_metrics(adata=adata, n_archetypes_list=range(2, 8))
 
-p = pt.plot_var_explained(adata)
-p.save(figure_dir / "plot_var_explained.pdf", verbose=False)
+    p = pt.plot_var_explained(adata)
+    p.save(figure_dir / "plot_var_explained.pdf", verbose=False)
 
-p = pt.plot_IC(adata)
-p.save(figure_dir / "plot_IC.pdf", verbose=False)
+    p = pt.plot_IC(adata)
+    p.save(figure_dir / "plot_IC.pdf", verbose=False)
 
-pt.compute_bootstrap_variance(
-    adata=adata, n_bootstrap=50, n_archetypes_list=range(2, 8)
-)
-
-p = pt.plot_bootstrap_variance(adata) + pn.theme_bw()
-p.save(figure_dir / "plot_bootstrap_variance.pdf", verbose=False)
-
-p = (
-    pt.plot_archetypes_2D(
-        adata=adata, show_contours=True, result_filters={"n_archetypes": 4}, alpha=0.05
+    pt.compute_bootstrap_variance(
+        adata=adata, n_bootstrap=50, n_archetypes_list=range(2, 8)
     )
-    + pn.theme_bw()
-)
-p.save(figure_dir / "plot_archetypes_2D.pdf", verbose=False)
-p.save(figure_dir / "plot_archetypes_2D.png", verbose=False)
 
-p = pt.plot_bootstrap_2D(adata, result_filters={"n_archetypes": 4}) + pn.theme_bw()
-p.save(figure_dir / "plot_bootstrap_2D.pdf", verbose=False)
-p.save(figure_dir / "plot_bootstrap_2D.png", verbose=False)
+    p = pt.plot_bootstrap_variance(adata) + pn.theme_bw()
+    p.save(figure_dir / "plot_bootstrap_variance.pdf", verbose=False)
+
+    p = (
+        pt.plot_archetypes_2D(
+            adata=adata,
+            show_contours=True,
+            result_filters={"n_archetypes": 4},
+            alpha=0.05,
+        )
+        + pn.theme_bw()
+    )
+    p.save(figure_dir / "plot_archetypes_2D.pdf", verbose=False)
+    p.save(figure_dir / "plot_archetypes_2D.png", verbose=False)
+
+    p = pt.plot_bootstrap_2D(adata, result_filters={"n_archetypes": 4}) + pn.theme_bw()
+    p.save(figure_dir / "plot_bootstrap_2D.pdf", verbose=False)
+    p.save(figure_dir / "plot_bootstrap_2D.png", verbose=False)
+else:
+    pt.compute_bootstrap_variance(adata=adata, n_bootstrap=50, n_archetypes_list=[4])
+    print("Skipping archetype selection metrics because --quick was set.")
 
 ########################################################################
 # Some 2D plots
@@ -385,6 +430,12 @@ ct_enrichment = pt.compute_meta_enrichment(
 )
 p = pt.barplot_meta_enrichment(ct_enrichment) + pn.theme_bw()
 p.save(figure_dir / "barplot_meta_enrichment_celltypes_original.pdf", verbose=False)
+
+cs_enrichment = pt.compute_meta_enrichment(
+    adata=adata, meta_col="SubCluster", result_filters={"n_archetypes": 4}
+)
+p = pt.barplot_meta_enrichment(cs_enrichment) + pn.theme_bw()
+p.save(figure_dir / "barplot_meta_enrichment_cellstate_original.pdf", verbose=False)
 
 ########################################################################
 # Assessing statistical significance of disease enrichment
@@ -501,6 +552,51 @@ print(f"{D.shape=}")
 # 7) add distance to the dataframe
 for arch_idx in range(len(Z)):
     obs_agg[f"dist_to_arch_{arch_idx}"] = D[:, arch_idx]
+
+# O) More plotting
+dist_cols = [c for c in obs_agg.columns if c.startswith("dist_to_arch_")]
+plot_df = obs_agg.melt(id_vars=["donor_id", "disease"], value_vars=dist_cols)
+plot_df["variable_clean"] = [
+    s.replace("dist_to_arch_", "Archetype ") for s in plot_df["variable"]
+]
+
+p = (
+    pn.ggplot(plot_df)
+    + pn.geom_point(
+        pn.aes(x="disease", y="value", color="disease"),
+        position=pn.position_jitter(width=0.10, height=0),
+        size=2,
+        alpha=0.5,
+    )
+    + pn.facet_wrap("variable_clean", ncol=4)
+    + pn.scale_color_manual(values=color_dict)
+    + pn.theme_bw()
+    + pn.theme(
+        figure_size=(6, 3),
+        strip_background=pn.element_rect(fill="white", color="black"),
+        strip_text=pn.element_text(color="black"),
+    )
+    + pn.labs(x="Disease Status", y="Distance")
+)
+p.save(figure_dir / "patient_pseudobulk_distance_point_plot.pdf", verbose=False)
+
+p = (
+    pn.ggplot(plot_df)
+    + pn.geom_boxplot(
+        pn.aes(x="disease", y="value", color="disease"),
+    )
+    + pn.facet_wrap("variable_clean", ncol=4)
+    + pn.scale_color_manual(values=color_dict)
+    + pn.theme_bw()
+    + pn.theme(
+        figure_size=(6, 3),
+        strip_background=pn.element_rect(fill="white", color="black"),
+        strip_text=pn.element_text(color="black"),
+    )
+    + pn.labs(x="Disease Status", y="Distance")
+)
+p.save(figure_dir / "patient_pseudobulk_distance_boxplot.pdf", verbose=False)
+p.show()
 
 # 8) prepare covariates
 cat_covars = [c for c in base_covars if str(obs_agg[c].dtype) in ("object", "category")]
@@ -628,7 +724,7 @@ for k in range(len(Z)):
         + pn.geom_jitter(
             data=obs_agg,
             mapping=pn.aes(x=dist_col, y="outcome"),
-            height=0.05,
+            height=0.0,
             alpha=0.25,
         )
         # bootstrap CI band
@@ -674,7 +770,7 @@ arch_expr_long = archetype_expression.copy().T
 arch_expr_long.columns = [f"arch_{c}" for c in arch_expr_long.columns]
 arch_expr_long = arch_expr_long.reset_index(names="gene")
 arch_expr_long = arch_expr_long.melt(id_vars="gene")
-arch_expr_long.to_csv(output_dir / "arch_expr_long.csv", index=False)
+arch_expr_long.to_csv(output_dir / "archetype_expression.csv", index=False)
 
 plot_df = arch_expr_long.loc[arch_expr_long["gene"].isin(gene_list), :].copy()
 plot_df["gene"] = pd.Categorical(plot_df["gene"], categories=gene_list, ordered=True)
@@ -727,9 +823,18 @@ arch_order = [f"{idx}" for idx in range(4)]
 plot_df["archetype"] = pd.Categorical(
     plot_df["archetype"], categories=arch_order, ordered=True
 )
+p_sig = 0.05
+sig_df = plot_df.loc[plot_df["p_value"] <= p_sig].copy()
 p = (
     pn.ggplot(plot_df, pn.aes(x="TF", y="archetype", fill="t_value"))
     + pn.geom_tile()
+    + pn.geom_text(
+        data=sig_df,
+        mapping=pn.aes(x="TF", y="archetype"),
+        label="x",
+        size=8,
+        color="black",
+    )
     + pn.scale_fill_gradient2(
         low="#2166AC",
         mid="#FFFFFF",
@@ -766,15 +871,61 @@ progeny_df = df_1.join(
 progeny_df.to_csv(output_dir / "progeny_df.csv", index=False)
 del df_1, df_2
 
+plot_df = progeny_df.copy()
+arch_order = [f"{idx}" for idx in range(4)]
+plot_df["archetype"] = pd.Categorical(
+    plot_df["archetype"].astype(str), categories=arch_order, ordered=True
+)
+
+wide = plot_df.pivot(index="archetype", columns="pathway", values="t_value")
+wide = wide.loc[arch_order, :]
+
+# Data-driven ordering by clustering progeny pathways (optimal leaf ordering)
+col_linkage = sch.linkage(
+    pdist(wide.T, metric="euclidean"),
+    method="average",
+    optimal_ordering=True,
+)
+pathway_order = wide.columns[sch.leaves_list(col_linkage)].tolist()
+plot_df["pathway"] = pd.Categorical(
+    plot_df["pathway"], categories=pathway_order, ordered=True
+)
+
+sig_df = plot_df.loc[plot_df["p_value"] <= p_sig].copy()
+
+p = (
+    pn.ggplot(plot_df, pn.aes(x="pathway", y="archetype", fill="t_value"))
+    + pn.geom_tile()
+    + pn.geom_text(
+        data=sig_df,
+        mapping=pn.aes(x="pathway", y="archetype"),
+        label="x",
+        size=8,
+        color="black",
+    )
+    + pn.scale_fill_gradient2(
+        low="#2166AC",
+        mid="#FFFFFF",
+        high="#B2182B",
+        midpoint=0,
+        oob=squish,
+    )
+    + pn.theme_bw()
+    + pn.theme(
+        axis_text_x=pn.element_text(rotation=90, ha="center"),
+        figure_size=(9, 6),
+    )
+    + pn.labs(x="Pathway", y="Archetype", fill="Progeny Enrichment\nt-value")
+)
+p.save(figure_dir / "progeny_tile_plot.pdf", verbose=False)
+
 ########################################################################
 # Characterize archetypal functions using MSigDB hallmarks
 ########################################################################
-database = "hallmark"
 min_genes_per_pathway = 5
 max_genes_per_pathway = np.inf
-msigdb_raw = dc.op.resource("MSigDB")
-msigdb_raw = msigdb_raw[~msigdb_raw.duplicated(["geneset", "genesymbol"])].copy()
 
+database = "hallmark"
 msigdb = msigdb_raw[msigdb_raw["collection"] == database]
 genesets_within_min = (
     (msigdb.value_counts("geneset") >= min_genes_per_pathway)
@@ -861,10 +1012,18 @@ plot_df["hallmark_label"] = plot_df["hallmark"].map(label_map)
 plot_df["archetype"] = pd.Categorical(
     plot_df["archetype"], categories=arch_order, ordered=True
 )
+sig_df = plot_df.loc[plot_df["p_value"] <= p_sig].copy()
 
 p = (
     pn.ggplot(plot_df, pn.aes(x="hallmark_label", y="archetype", fill="t_value"))
     + pn.geom_tile()
+    + pn.geom_text(
+        data=sig_df,
+        mapping=pn.aes(x="hallmark_label", y="archetype"),
+        label="x",
+        size=8,
+        color="black",
+    )
     + pn.scale_fill_gradient2(
         low="#2166AC",
         mid="#FFFFFF",
@@ -879,11 +1038,214 @@ p = (
     )
     + pn.labs(x="Hallmark", y="Archetype", fill="Hallmark Enrichment\nt-value")
 )
+p.save(figure_dir / "hallmark_tile_plot.pdf", verbose=False)
 
-p.show()
+########################################################################
+# Characterize archetypal functions using MSigDB NABA_MATRISOME
+########################################################################
+naba_cancer_sets = [
+    "NABA_MATRISOME_PRIMARY_METASTATIC_COLORECTAL_TUMOR",
+    "NABA_MATRISOME_HIGHLY_METASTATIC_BREAST_CANCER",
+    "NABA_MATRISOME_HIGHLY_METASTATIC_BREAST_CANCER_TUMOR_CELL_DERIVED",
+    "NABA_MATRISOME_POORLY_METASTATIC_BREAST_CANCER",
+    "NABA_MATRISOME_POORLY_METASTATIC_BREAST_CANCER_TUMOR_CELL_DERIVED",
+    "NABA_MATRISOME_HIGHLY_METASTATIC_MELANOMA",
+    "NABA_MATRISOME_HIGHLY_METASTATIC_MELANOMA_TUMOR_CELL_DERIVED",
+    "NABA_MATRISOME_POORLY_METASTATIC_MELANOMA",
+    "NABA_MATRISOME_POORLY_METASTATIC_MELANOMA_TUMOR_CELL_DERIVED",
+    "NABA_MATRISOME_METASTATIC_COLORECTAL_LIVER_METASTASIS",
+    "NABA_MATRISOME_HGSOC_OMENTAL_METASTASIS",
+    "NABA_MATRISOME_MULTIPLE_MYELOMA",
+]
+
+matrisome = msigdb_raw.loc[msigdb_raw["geneset"].str.startswith("NABA_"), :].copy()
+matrisome = matrisome.loc[~matrisome["geneset"].isin(naba_cancer_sets), :].copy()
+matrisome = matrisome.rename(columns={"geneset": "source", "genesymbol": "target"})
+matrisome_acts_ulm_est, matrisome_acts_ulm_est_p = dc.mt.ulm(
+    data=archetype_expression,
+    net=matrisome,
+    verbose=False,
+)
+
+df_t = matrisome_acts_ulm_est.reset_index(names="archetype").melt(
+    id_vars="archetype", var_name="matrisome_set", value_name="t_value"
+)
+df_p = matrisome_acts_ulm_est_p.reset_index(names="archetype").melt(
+    id_vars="archetype", var_name="matrisome_set", value_name="p_value"
+)
+
+matrisome_df = df_t.merge(df_p, on=["archetype", "matrisome_set"], how="inner")
+
+matrisome_df.to_csv(output_dir / "matrisome_df.csv", index=False)
+del df_t, df_p
+
+plot_df = matrisome_df.copy()
+arch_order = [f"{idx}" for idx in range(4)]
+plot_df["archetype"] = pd.Categorical(
+    plot_df["archetype"], categories=arch_order, ordered=True
+)
+
+wide = plot_df.pivot(index="archetype", columns="matrisome_set", values="t_value")
+wide = wide.loc[arch_order, :]
+
+# Data-driven ordering by clustering matrisome gene sets (optimal leaf ordering)
+col_linkage = sch.linkage(
+    pdist(wide.T, metric="euclidean"),
+    method="average",
+    optimal_ordering=True,
+)
+matrisome_order = wide.columns[sch.leaves_list(col_linkage)].tolist()
+plot_df["matrisome_set"] = pd.Categorical(
+    plot_df["matrisome_set"], categories=matrisome_order, ordered=True
+)
+
+p_sig = 0.05
+sig_df = plot_df.loc[plot_df["p_value"] <= p_sig].copy()
+
+p = (
+    pn.ggplot(plot_df, pn.aes(x="matrisome_set", y="archetype", fill="t_value"))
+    + pn.geom_tile()
+    + pn.geom_text(
+        data=sig_df,
+        mapping=pn.aes(x="matrisome_set", y="archetype"),
+        label="x",
+        size=8,
+        color="black",
+    )
+    + pn.scale_fill_gradient2(
+        low="#2166AC",
+        mid="#FFFFFF",
+        high="#B2182B",
+        midpoint=0,
+        oob=squish,
+    )
+    + pn.theme_bw()
+    + pn.theme(
+        figure_size=(8.5, 9),
+    )
+    + pn.labs(x="Gene", y="Archetype", fill="Matrisome Terms\nt-value")
+    + pn.coord_flip()
+)
+p.save(figure_dir / "matrisome_tile_plot.pdf", verbose=False)
 
 ########################################################################
 # Save processed adata object (for now both on sds and locally)
 ########################################################################
 pt.write_h5ad(adata, output_dir / "fibroblast_cross_condition_partipy.h5ad")
 pt.write_h5ad(adata, "/home/pschaefer/fibroblast_cross_condition_partipy.h5ad")
+
+
+########################################################################
+# Integration vs No-Integration Test
+########################################################################
+def pearsonr_per_row(mtx_1: np.ndarray, mtx_2: np.ndarray, return_pval: bool = False):
+    from scipy.stats import pearsonr
+
+    assert mtx_1.shape == mtx_2.shape
+    corr_list = []
+    pval_list = []
+    for row_idx in range(mtx_1.shape[0]):
+        pearson_out = pearsonr(mtx_1[row_idx, :], mtx_2[row_idx, :])
+        corr_list.append(pearson_out.statistic)
+        pval_list.append(pearson_out.pvalue)
+    if return_pval:
+        return np.array(corr_list), np.array(pval_list)
+    else:
+        return np.array(corr_list)
+
+
+gene_mask = adata.var.index[adata.var["n_cells"] > 100].to_list()
+
+adata_default = adata.copy()
+del (
+    adata_default.uns["AA_results"],
+    adata_default.uns["AA_config"],
+    adata_default.uns["AA_bootstrap"],
+    adata_default.uns["AA_cell_weights"],
+    adata_default.uns["AA_pca"],
+    adata_default.uns["AA_selection_metrics"],
+)
+pt.set_obsm(adata=adata_default, obsm_key="X_pca", n_dimensions=16)
+pt.compute_archetypes(adata_default, n_archetypes=4)
+pt.compute_archetype_weights(adata_default, result_filters={"n_archetypes": 4})
+weights = pt.get_aa_cell_weights(adata_default, n_archetypes=4)
+weights /= weights.sum(axis=0, keepdims=True)
+assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
+archetype_expression_default = pt.compute_archetype_expression(
+    adata=adata_default, layer="z_scaled"
+)[gene_mask]
+
+adata_harmony = adata.copy()
+del (
+    adata_harmony.uns["AA_results"],
+    adata_harmony.uns["AA_config"],
+    adata_harmony.uns["AA_bootstrap"],
+    adata_harmony.uns["AA_cell_weights"],
+    adata_harmony.uns["AA_pca"],
+    adata_harmony.uns["AA_selection_metrics"],
+)
+pt.set_obsm(adata=adata_harmony, obsm_key="X_pca_harmony", n_dimensions=16)
+pt.compute_archetypes(adata_harmony, n_archetypes=4)
+pt.compute_archetype_weights(adata_harmony, result_filters={"n_archetypes": 4})
+weights = pt.get_aa_cell_weights(adata_harmony, n_archetypes=4)
+weights /= weights.sum(axis=0, keepdims=True)
+assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
+archetype_expression_harmony = pt.compute_archetype_expression(
+    adata=adata_harmony, layer="z_scaled"
+)[gene_mask]
+
+dist = cdist(
+    archetype_expression_default, archetype_expression_harmony, metric="correlation"
+)
+corr = 1 - dist
+_ref_idx, query_idx = linear_sum_assignment(dist)
+
+archetype_expression_aligned_a = (
+    archetype_expression_default.loc[_ref_idx, :].to_numpy().copy()
+)
+archetype_expression_aligned_b = (
+    archetype_expression_harmony.loc[query_idx, :].to_numpy().copy()
+)
+
+pearson_r, pearson_pvals = pearsonr_per_row(
+    archetype_expression_aligned_a, archetype_expression_aligned_b, return_pval=True
+)
+
+plot_df = (
+    pd.DataFrame(
+        corr[:, query_idx],
+        index=[f"ref_arch_{idx}" for idx in range(4)],
+        columns=[f"query_arch_{idx}" for idx in range(4)],
+    )
+    .reset_index(names="x")
+    .melt(id_vars="x", var_name="y", value_name="correlation")
+)
+plot_df = (
+    pd.DataFrame(
+        corr[:, query_idx],
+        index=[f"arch_{idx}" for idx in range(4)],
+        columns=[f"arch_{idx}" for idx in range(4)],
+    )
+    .reset_index(names="x")
+    .melt(id_vars="x", var_name="y", value_name="correlation")
+)
+p = (
+    pn.ggplot(plot_df)
+    + pn.geom_tile(pn.aes(x="x", y="y", fill="correlation"))
+    + pn.geom_text(pn.aes(x="x", y="y", label="correlation"), format_string="{:.2f}")
+    + pn.scale_fill_gradient2(
+        low="#2166AC",
+        mid="#FFFFFF",
+        high="#B2182B",
+        midpoint=0,
+        limits=(-1.0, 1.0),
+        oob=squish,
+    )
+    + pn.labs(
+        x="Archetypes based on X_pca",
+        y="Archetypes based on X_pca_harmony",
+        fill="Gene Expression\nCorrelation",
+    )
+)
+p.save(figure_dir / "aa_with_and_without_harmony.pdf")
+del plot_df

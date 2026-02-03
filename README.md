@@ -13,6 +13,7 @@ For additional examples and applications of Archetypal Analysis and Pareto Task 
 We recommend installing dependencies with **mamba** (or **conda**)
 
 ```bash
+mamba env remove -n partipy -y
 mamba env create -n partipy -f env.yaml
 ```
 
@@ -94,6 +95,7 @@ python -m code.examples.hepatocyte_example
 mamba activate partipy
 
 python -m code.examples.fibroblast_cross_condition
+python -m code.examples.fibroblast_cross_condition --quick
 ```
 
 ### Additional Scripts

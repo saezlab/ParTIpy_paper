@@ -863,6 +863,25 @@ arch_expr_long = arch_expr_long.reindex(
 
 arch_expr_long.to_csv(output_dir / "archetype_expression_pivot.csv", index=False)
 
+# Save top genes per archetype with a raw-expression threshold
+raw_expr_threshold = 1.0
+top_n_genes = 50
+arch_expr_long_filtered = arch_expr_long.loc[
+    arch_expr_long["raw"] >= raw_expr_threshold, :
+].copy()
+top_genes_df = (
+    arch_expr_long_filtered.sort_values("z_scaled", ascending=False)
+    .groupby("archetype", group_keys=False)
+    .head(top_n_genes)
+)
+top_genes_df = top_genes_df.assign(
+    rank=top_genes_df.groupby("archetype").cumcount() + 1
+)
+for arch, df_arch in top_genes_df.groupby("archetype"):
+    df_arch.to_csv(
+        output_dir / f"top_genes_archetype_{arch}_raw_ge_1.csv", index=False
+    )
+
 plot_df = arch_expr_long.loc[arch_expr_long["gene"].isin(gene_list), :].copy()
 plot_df["gene"] = pd.Categorical(plot_df["gene"], categories=gene_list, ordered=True)
 arch_order = [f"arch_{idx}" for idx in range(n_archetypes)]
@@ -936,7 +955,7 @@ p = (
     + pn.theme(
         figure_size=(3, 9),
     )
-    + pn.labs(x="Gene", y="Archetype", fill="TF Activation\nt-value")
+    + pn.labs(y="TF", x="Archetype", fill="TF Activation\nt-value")
 )
 p.save(figure_dir / "tf_activation_tile_plot.pdf", verbose=False)
 

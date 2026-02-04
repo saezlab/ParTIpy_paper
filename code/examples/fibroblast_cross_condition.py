@@ -2,7 +2,7 @@
 # paper reference: https://www.nature.com/articles/s41586-022-04817-8
 # other papers
 # 1) https://www.nature.com/articles/s41586-021-03549-5
-# 2) 
+# 2)
 # see Leo's analysis here: https://github.com/saezlab/best_practices_ParTIpy/tree/main
 from pathlib import Path
 import argparse
@@ -100,118 +100,117 @@ marker_dict_generic = {
     ],
 }
 
-
 ########################################################################
 # Fibroblast specific marker genes (already ordered by archetype)
 ########################################################################
 marker_blocks = {
-    0: {
+    2: {
         # Archetype 0
         "function": (
             "Activated fibrotic ECM fibroblasts / matrifibrocytes. "
-            "High matrix production, ECM remodeling, tissue stiffening, "
-            "and activated mesenchymal programs."
+            "Characterized by high fibrillar and provisional ECM production, "
+            "active ECM remodeling and crosslinking, tissue stiffening, "
+            "and engagement of mesenchymal activation programs."
         ),
         "genes": [
-            # --- Core fibrotic ECM genes ---
-            "POSTN",   # periostin; canonical activated fibroblast / matrifibrocyte marker
-            "FGF14",   # strong archetype-specific marker in your data; distinguishes this activated state
-            "FN1",     # fibronectin; provisional ECM, wound repair
-            "COL1A1",  # fibrillar collagen; bulk fibrosis
-            "VCAN",    # versican; provisional ECM, tissue remodeling
-            "TNC",     # tenascin C; injury-induced ECM, mechanotransduction
-            "LOXL1",   # collagen crosslinking; matrix stiffening
-
+            # --- Core fibrotic / matrifibroblast ECM ---
+            "POSTN",  # periostin; canonical activated fibroblast / matrifibrocyte marker
+            # "FGF14",   # strong archetype-specific marker in this dataset; distinguishes this activated state
+            "FN1",  # fibronectin; provisional ECM during wound repair
+            "COL1A1",  # type I collagen; bulk fibrillar collagen deposition
+            "COL12A1",  # FACIT collagen; regulates fibril organization and tissue mechanics
+            "VCAN",  # versican; provisional ECM, cell–matrix interactions
+            "TNC",  # tenascin C; injury-induced ECM, mechanotransduction
+            "LOXL1",  # lysyl oxidase; collagen crosslinking and matrix stiffening
             # --- Pro-fibrotic signaling / matrix turnover ---
-            "CCN2",    # CTGF; downstream TGF-β effector, fibrosis amplification
-            "MRC2",    # collagen internalization / ECM turnover (kept as boundary marker)
+            # "CCN2",    # CTGF; downstream TGF-β effector, fibrosis amplification
+            # "MRC2",    # collagen internalization and ECM turnover (boundary marker)
         ],
         "TFs": [
-            # --- Mesenchymal activation / myofibroblast programs ---
-            "TWIST1",  # EMT / mesenchymal reprogramming, fibroblast activation
-            "SCX",     # tendon-like / myofibroblast lineage program
-            "JUNB",    # immediate-early AP-1 factor; activation and stress response
-
-            # --- Chromatin-level activation ---
-            "KAT6A",   # histone acetyltransferase; permissive chromatin for activation
-            "KDM2A",   # histone demethylase; chromatin remodeling in activation
-
-            # --- Positional / developmental memory ---
-            "HOXA5",   # fibroblast positional identity; often reactivated in fibrosis
+            # --- Mesenchymal activation / myofibroblast identity ---
+            "TWIST1",  # EMT and mesenchymal reprogramming; fibroblast activation
+            "SCX",  # tendon-like / ECM-specialized fibroblast lineage program
+            # "JUNB",    # immediate-early AP-1 factor; generic activation and stress response
+            # --- Chromatin permissiveness for activation ---
+            "KAT6A",  # histone acetyltransferase; enables transcriptional activation
+            "KDM2A",  # histone demethylase; chromatin remodeling during activation
+            # --- Wound-associated mesenchymal programs ---
+            # "HOXA5",   # positional fibroblast identity; often reactivated in fibrosis
+            "PRRX1",  # wound-activated mesenchymal progenitor program
+            "SRF",  # actin–cytoskeleton and mechanotransduction-driven transcription
         ],
     },
-
-    1: {
+    0: {
         # Archetype 1
         "function": (
             "Stress-responsive / regulatory fibroblasts. "
-            "Integrates TGF-β sensing with glucocorticoid, hypoxia, "
-            "oxidative stress, and inflammatory signaling."
+            "Integrates hormonal, hypoxic, oxidative, and inflammatory stress signaling "
+            "with intact TGF-β sensing, while remaining weakly fibrogenic."
         ),
         "genes": [
-            # --- Direct stress-response markers ---
-            "FKBP5",    # glucocorticoid receptor target; stress hormone responsiveness
-            "PPARG",    # metabolic regulation; anti-fibrotic / regulatory axis
-            "FOXO1",    # stress tolerance, quiescence vs activation balance
-
-            # --- TGF-β sensing machinery ---
-            "TGFBR2",   # TGF-β receptor II
-            "TGFBR3",   # co-receptor; fine-tunes TGF-β sensitivity
-            "SMAD3",    # canonical TGF-β signal transducer
-
-            # --- Canonical TGF-β output ---
-            "SERPINE1", # PAI-1; classic TGF-β–induced stress/fibrosis gene
+            # --- Hormonal and metabolic stress response ---
+            "FKBP5",  # glucocorticoid receptor target; stress hormone responsiveness
+            "PPARG",  # lipid metabolism and anti-fibrotic regulatory axis
+            "FOXO1",  # stress tolerance, growth restraint, quiescence balance
+            # --- TGF-β sensing machinery (buffered, not executed) ---
+            "TGFBR2",  # TGF-β receptor II
+            "TGFBR3",  # co-receptor; fine-tunes ligand availability and sensitivity
+            "SMAD3",  # canonical TGF-β signal transducer
+            # --- Canonical TGF-β output (weak / restrained) ---
+            # "SERPINE1", # PAI-1; classic TGF-β–induced stress/fibrosis gene
+            # --- Basement-membrane–associated collagen ---
+            "COL4A4",  # type IV collagen; basement membrane, non-fibrillar ECM
         ],
         "TFs": [
             # --- Hormonal stress axis ---
-            "NR3C1",   # glucocorticoid receptor; dominant stress regulator
-
-            # --- Hypoxia / injury ---
-            "HIF1A",   # hypoxia sensing; ischemic and fibrotic stress
-
-            # --- Inflammatory integration ---
-            "NFKB",    # inflammatory master regulator
-            "CEBPB",   # inflammatory and stress-responsive transcription
-
-            # --- Metabolic scaling ---
-            "MYC",     # metabolic and biosynthetic scaling under stress
-
+            "NR3C1",  # glucocorticoid receptor; dominant stress-modulatory TF
+            # --- Hypoxia and injury sensing ---
+            "HIF1A",  # hypoxia-responsive transcription; ischemic and fibrotic stress
+            # --- Inflammatory signal integration ---
+            "NFKB",  # inflammatory master regulator
+            "CEBPB",  # cytokine- and stress-responsive transcriptional amplifier
+            # --- Metabolic and biosynthetic scaling ---
+            "MYC",  # metabolic and transcriptional scaling under stress
             # --- Oxidative stress defense ---
-            "NFE2L2",  # NRF2; redox and detoxification response
+            "NFE2L2",  # NRF2; redox balance and detoxification response
         ],
     },
-
-    2: {
+    1: {
         # Archetype 2
         "function": (
             "Perivascular / basement-membrane fibroblasts. "
-            "Vascular-adjacent niche, laminin-rich ECM, "
-            "structural support rather than bulk fibrosis."
+            "Vascular-adjacent niche fibroblasts characterized by laminin-rich "
+            "and basement-membrane ECM, structural support, and limited fibrotic activation."
         ),
         "genes": [
-            # --- Basement membrane / vascular niche ECM ---
-            "COL15A1", # perivascular fibroblast hallmark
-            "COLEC12", # endothelial / perivascular adjacency
-            "SMOC2",   # basement membrane-associated ECM protein
-            "LAMB1",   # laminin beta chain; basement membrane
-            "LAMC1",   # laminin gamma chain
-
+            # --- Basement membrane / perivascular ECM ---
+            "COL15A1",  # perivascular fibroblast hallmark collagen
+            "COL4A1",  # type IV collagen; basement membrane scaffold
+            "COLEC12",  # vascular-associated ECM receptor; endothelial adjacency
+            "SMOC2",  # basement membrane–associated matricellular protein
+            "LAMB1",  # laminin beta chain; basement membrane integrity
+            "LAMC1",  # laminin gamma chain
+            "ADAMTSL3",  # ECM-associated regulator; structural niche maintenance
             # --- Boundary marker ---
-            "RGS5",    # pericyte-adjacent marker (kept to define interface, not identity)
+            # "RGS5",    # pericyte-adjacent marker (defines interface, not identity)
         ],
         "TFs": [
-            # --- Niche / positional identity ---
-            "RORA",    # circadian / niche regulation; strong arch_2 signal
-            "ATOH1",   # differentiation / lineage control
-            "LHX3",    # developmental positional program
-            "KLF17",   # anti-activation, maintains non-fibrotic state
-
-            # --- Vascular / mesenchymal identity ---
-            "NR2F2",   # COUP-TFII; vascular-adjacent fibroblast identity
-            "PROX1",   # lymphatic / vascular niche transcriptional memory
+            # --- Positional and niche identity ---
+            "PBX2",  # transcriptional cofactor; positional identity maintenance
+            "LHX3",  # developmental positional program
+            # --- Transcriptional restraint / chromatin control ---
+            "HDAC3",  # chromatin repression; state stabilization
+            "REST",  # global transcriptional silencing
+            # --- Anti-activation / growth-factor buffering ---
+            "KLF17",  # anti-EMT, maintains non-fibrotic state
+            "ERF",  # MAPK-responsive transcriptional brake
+            # --- Vascular / mesenchymal identity (optional) ---
+            # "NR2F2",   # COUP-TFII; vascular-adjacent fibroblast identity
+            # "PROX1",   # lymphatic / vascular niche transcriptional memory
         ],
     },
 }
+
 
 # ---------------------------------------------------------------------
 # Derive ordered gene_list and tf_list for plotting (deduplicated)
@@ -878,13 +877,12 @@ top_genes_df = top_genes_df.assign(
     rank=top_genes_df.groupby("archetype").cumcount() + 1
 )
 for arch, df_arch in top_genes_df.groupby("archetype"):
-    df_arch.to_csv(
-        output_dir / f"top_genes_archetype_{arch}_raw_ge_1.csv", index=False
-    )
+    df_arch.to_csv(output_dir / f"top_genes_archetype_{arch}_raw_ge_1.csv", index=False)
 
 plot_df = arch_expr_long.loc[arch_expr_long["gene"].isin(gene_list), :].copy()
 plot_df["gene"] = pd.Categorical(plot_df["gene"], categories=gene_list, ordered=True)
-arch_order = [f"arch_{idx}" for idx in range(n_archetypes)]
+plot_df["archetype"] = plot_df["archetype"].str.replace("arch_", "")
+arch_order = [f"{idx}" for idx in range(n_archetypes)]
 plot_df["archetype"] = pd.Categorical(
     plot_df["archetype"], categories=arch_order, ordered=True
 )
@@ -901,7 +899,13 @@ p = (
     )
     + pn.theme_bw()
     + pn.theme(
-        figure_size=(3, 9),
+        figure_size=(4, 9),
+        axis_title_x=pn.element_text(size=14),
+        axis_title_y=pn.element_text(size=14),
+        axis_text_x=pn.element_text(size=11),
+        axis_text_y=pn.element_text(size=11),
+        legend_title=pn.element_text(size=12),
+        legend_text=pn.element_text(size=9),
     )
     + pn.labs(y="Gene", x="Archetype", fill="Mean z-scored\nGene Expression")
 )
@@ -924,6 +928,15 @@ df_2 = collectri_acts_ulm_est_p.reset_index(names="archetype").melt(
 collectri_df = df_1.join(df_2.set_index(["archetype", "TF"]), on=["archetype", "TF"])
 collectri_df.to_csv(output_dir / "collectri_df.csv", index=False)
 del df_1, df_2
+
+# save top 15 TFs per archetype
+pval_thresh = 0.05
+top_n = 15
+df_filt = collectri_df[collectri_df["p_value"] <= pval_thresh].copy()
+
+for arch, df_arch in df_filt.groupby("archetype"):
+    top_tfs = df_arch.sort_values("t_value", ascending=False).head(top_n)
+    top_tfs.to_csv(output_dir / f"archetype_{arch}_top{top_n}_TFs.csv", index=False)
 
 plot_df = collectri_df
 plot_df = plot_df.loc[plot_df["TF"].isin(tf_list), :].copy()
@@ -954,6 +967,12 @@ p = (
     + pn.theme_bw()
     + pn.theme(
         figure_size=(3, 9),
+        axis_title_x=pn.element_text(size=14),
+        axis_title_y=pn.element_text(size=14),
+        axis_text_x=pn.element_text(size=11),
+        axis_text_y=pn.element_text(size=11),
+        legend_title=pn.element_text(size=12),
+        legend_text=pn.element_text(size=9),
     )
     + pn.labs(y="TF", x="Archetype", fill="TF Activation\nt-value")
 )
@@ -1021,6 +1040,12 @@ p = (
     + pn.theme_bw()
     + pn.theme(
         figure_size=(6, 9),
+        axis_title_x=pn.element_text(size=14),
+        axis_title_y=pn.element_text(size=14),
+        axis_text_x=pn.element_text(size=11),
+        axis_text_y=pn.element_text(size=11),
+        legend_title=pn.element_text(size=12),
+        legend_text=pn.element_text(size=9),
     )
     + pn.labs(y="Pathway", x="Archetype", fill="Progeny Enrichment\nt-value")
 )
@@ -1139,6 +1164,12 @@ p = (
     + pn.theme_bw()
     + pn.theme(
         figure_size=(6, 9),
+        axis_title_x=pn.element_text(size=14),
+        axis_title_y=pn.element_text(size=14),
+        axis_text_x=pn.element_text(size=11),
+        axis_text_y=pn.element_text(size=11),
+        legend_title=pn.element_text(size=12),
+        legend_text=pn.element_text(size=9),
     )
     + pn.labs(y="Hallmark", x="Archetype", fill="Hallmark Enrichment\nt-value")
 )
@@ -1199,6 +1230,8 @@ col_linkage = sch.linkage(
     optimal_ordering=True,
 )
 matrisome_order = wide.columns[sch.leaves_list(col_linkage)].tolist()
+matrisome_order = [s.replace("NABA_", "") for s in matrisome_order]
+plot_df["matrisome_set"] = plot_df["matrisome_set"].str.replace("NABA_", "")
 plot_df["matrisome_set"] = pd.Categorical(
     plot_df["matrisome_set"], categories=matrisome_order, ordered=True
 )
@@ -1225,7 +1258,13 @@ p = (
     )
     + pn.theme_bw()
     + pn.theme(
-        figure_size=(8.5, 9),
+        figure_size=(6, 9),
+        axis_title_x=pn.element_text(size=14),
+        axis_title_y=pn.element_text(size=14),
+        axis_text_x=pn.element_text(size=11),
+        axis_text_y=pn.element_text(size=11),
+        legend_title=pn.element_text(size=12),
+        legend_text=pn.element_text(size=9),
     )
     + pn.labs(y="Gene", x="Archetype", fill="Matrisome Terms\nt-value")
 )

@@ -389,6 +389,9 @@ p = (
     + pn.theme(
         legend_key=pn.element_rect(fill="white", color="white"),
         legend_background=pn.element_rect(fill="white", color="black"),
+        axis_title_x=pn.element_text(size=16),
+        axis_title_y=pn.element_text(size=16),
+        axis_text=pn.element_text(size=13),
     )
 )
 p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_1.png", verbose=False)
@@ -622,6 +625,7 @@ p = (
     pn.ggplot(plot_df)
     + pn.geom_point(
         pn.aes(x="disease", y="value", color="disease"),
+        show_legend=False,
         position=pn.position_jitter(width=0.10, height=0),
         size=2,
         alpha=0.5,
@@ -630,7 +634,7 @@ p = (
     + pn.scale_color_manual(values=color_dict)
     + pn.theme_bw()
     + pn.theme(
-        figure_size=(6, 3),
+        figure_size=(3, 3),
         strip_background=pn.element_rect(fill="white", color="black"),
         strip_text=pn.element_text(color="black"),
     )
@@ -638,23 +642,23 @@ p = (
 )
 p.save(figure_dir / "patient_pseudobulk_distance_point_plot.pdf", verbose=False)
 
+
 p = (
     pn.ggplot(plot_df)
     + pn.geom_boxplot(
-        pn.aes(x="disease", y="value", color="disease"),
+        pn.aes(x="disease", y="value", color="disease"), show_legend=False
     )
     + pn.facet_wrap("variable_clean", ncol=n_archetypes)
     + pn.scale_color_manual(values=color_dict)
     + pn.theme_bw()
     + pn.theme(
-        figure_size=(6, 3),
+        figure_size=(3, 3),
         strip_background=pn.element_rect(fill="white", color="black"),
         strip_text=pn.element_text(color="black"),
     )
     + pn.labs(x="Disease Status", y="Distance")
 )
 p.save(figure_dir / "patient_pseudobulk_distance_boxplot.pdf", verbose=False)
-p.show()
 
 # 8) saving
 obs_agg.to_csv(output_dir / "obs_aggregated.csv", index=False)
@@ -720,6 +724,56 @@ reject, qvals, _, _ = multipletests(
 ttest_results["q"] = qvals
 ttest_results["reject_fdr_0p05"] = reject
 ttest_results.to_csv(output_dir / "ttest_results.csv", index=False)
+
+# O) boxplot with p-values from t-test
+ann = (
+    ttest_results.assign(
+        variable_clean=lambda d: d["dist_col"].str.replace(
+            "dist_to_arch_", "Archetype ", regex=False
+        ),
+        label=lambda d: d["p"].map(lambda p: f"p={p:.2g}"),
+    )
+    .loc[:, ["variable_clean", "label"]]
+)
+ypos = (
+    plot_df.groupby("variable_clean")["value"]
+    .max()
+    .reset_index(name="ymax")
+)
+ypos["y"] = ypos["ymax"] * 1.03  # increase y-limit by ~8%
+
+ann = ann.merge(ypos[["variable_clean", "y"]], on="variable_clean", how="left")
+
+p = (
+    pn.ggplot(plot_df)
+    + pn.geom_boxplot(
+        pn.aes(x="disease", y="value", color="disease"),
+        show_legend=False,
+    )
+    + pn.geom_text(
+        data=ann,
+        mapping=pn.aes(x=1.5, y="y", label="label"),
+        inherit_aes=False,
+        size=8,
+        ha="center",
+        va="bottom",
+    )
+    + pn.facet_wrap("variable_clean", ncol=n_archetypes)
+    + pn.scale_color_manual(values=color_dict)
+    + pn.scale_y_continuous(expand=(0.05, 0.10))  # ← increases upper y-limit
+    + pn.theme_bw()
+    + pn.theme(
+        figure_size=(3, 3),
+        strip_background=pn.element_rect(fill="white", color="black"),
+        strip_text=pn.element_text(color="black"),
+    )
+    + pn.labs(x="Disease Status", y="Distance")
+)
+
+p.save(
+    figure_dir / "patient_pseudobulk_distance_boxplot_with_pvals.pdf",
+    verbose=False,
+)
 
 # b) binary outcome regression
 obs_agg["outcome"] = (obs_agg[y_col] == y_col_one).astype(int)

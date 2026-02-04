@@ -272,6 +272,24 @@ adata = adata[
     :,
 ].copy()
 
+# add binned age categories
+adata.obs["age_group"] = pd.cut(
+    adata.obs["age"],
+    bins=[0, 40, 50, 60, 70],
+    labels=["<40", "40-49", "50-59", "60-69"],
+    include_lowest=True,
+    ordered=True,
+).astype(str)
+
+# add QC variables
+adata.var["mt"] = adata.var_names.str.startswith("MT-")
+adata.var["ribo"] = adata.var_names.str.startswith(("RPS", "RPL"))
+adata.var["hb"] = adata.var_names.str.contains(("^HB[^(P)]"))
+
+sc.pp.calculate_qc_metrics(
+    adata, qc_vars=["mt", "ribo", "hb"], inplace=True, percent_top=[20], log1p=True
+)
+
 missing = [g for g in marker_genes if g not in adata.var_names]
 if missing:
     raise ValueError(f"Missing marker genes in adata.var_names: {missing}")
@@ -443,6 +461,38 @@ ax = fig.axes[0]
 pc_0_limits = ax.get_xlim()
 pc_1_limits = ax.get_ylim()
 
+# some more qc plots
+for qc_var in [
+    "cellbender_ngenes",
+    "cellbender_ncount",
+    "pct_counts_mt",
+    "pct_counts_ribo",
+    "pct_counts_hb",
+]:
+    p = (
+        pt.plot_archetypes_2D(
+            adata=adata,
+            dimensions=[0, 1],
+            show_contours=True,
+            color=qc_var,
+            alpha=0.05,
+            size=0.5,
+            result_filters={"n_archetypes": n_archetypes},
+        )
+        + pn.theme_bw()
+        + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1.0, "size": 5}))
+        + pn.labs(x="PC 0", y="PC 1")
+        + pn.coord_equal()
+        + pn.theme(
+            legend_key=pn.element_rect(fill="white", color="white"),
+            legend_background=pn.element_rect(fill="white", color="black"),
+            axis_title_x=pn.element_text(size=16),
+            axis_title_y=pn.element_text(size=16),
+            axis_text=pn.element_text(size=13),
+        )
+    )
+    p.save(figure_dir / f"plot_archetypes_2D_{qc_var}_pc0_pc_1.png", verbose=False)
+
 p = (
     pt.plot_archetypes_2D(
         adata=adata,
@@ -500,6 +550,10 @@ weights = pt.get_aa_cell_weights(adata, n_archetypes=n_archetypes)
 weights /= weights.sum(axis=0, keepdims=True)
 assert np.allclose(weights.sum(axis=0), 1, rtol=1e-3)
 
+# add weigths to adata.obs for plotting
+for arch_idx in range(n_archetypes):
+    adata.obs[f"weigths_for_arch_{arch_idx}"] = weights[:, arch_idx].copy()
+
 disease_enrichment = pt.compute_meta_enrichment(
     adata=adata, meta_col="disease", result_filters={"n_archetypes": n_archetypes}
 )
@@ -527,6 +581,110 @@ cs_enrichment = pt.compute_meta_enrichment(
 )
 p = pt.barplot_meta_enrichment(cs_enrichment) + pn.theme_bw()
 p.save(figure_dir / "barplot_meta_enrichment_cellstate_original.pdf", verbose=False)
+
+########################################################################
+# 2D plots seperate by disease status
+########################################################################
+# Make a plotting data frame with the coordinates used for plotting
+# (adjust if your pt.plot_archetypes_2D uses different columns)
+plot_df = adata.obs.copy()
+plot_df["pc_0"] = adata.obsm["X_pca_harmony"][:, 0]
+plot_df["pc_1"] = adata.obsm["X_pca_harmony"][:, 1]
+
+p = (
+    pt.plot_archetypes_2D(
+        adata=adata,
+        dimensions=[0, 1],
+        show_contours=True,
+        color="disease",
+        alpha=0.0,
+        size=0.5,
+        result_filters={"n_archetypes": n_archetypes},
+    )
+    # draw points again with alpha mapped by disease
+    + pn.geom_point(
+        data=plot_df,
+        mapping=pn.aes(x="pc_0", y="pc_1", alpha="disease", color="disease"),
+        size=0.5,
+    )
+    + pn.scale_color_manual(values=color_dict)
+    + pn.scale_alpha_manual(values={"NF": 0.0, "CM": 0.05}, breaks=[])
+    + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1.0, "size": 5}))
+    + pn.theme_bw()
+    + pn.labs(x="PC 0", y="PC 1", color="Disease\nStatus")
+    + pn.coord_equal()
+    + pn.theme(
+        legend_key=pn.element_rect(fill="white", color="white"),
+        legend_background=pn.element_rect(fill="white", color="black"),
+        axis_title_x=pn.element_text(size=16),
+        axis_title_y=pn.element_text(size=16),
+        axis_text=pn.element_text(size=13),
+    )
+)
+p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2_only_CM.png", verbose=False, dpi=300)
+
+p = (
+    pt.plot_archetypes_2D(
+        adata=adata,
+        dimensions=[0, 1],
+        show_contours=True,
+        color="disease",
+        alpha=0.0,
+        size=0.5,
+        result_filters={"n_archetypes": n_archetypes},
+    )
+    # draw points again with alpha mapped by disease
+    + pn.geom_point(
+        data=plot_df,
+        mapping=pn.aes(x="pc_0", y="pc_1", alpha="disease", color="disease"),
+        size=0.5,
+    )
+    + pn.scale_color_manual(values=color_dict)
+    + pn.scale_alpha_manual(values={"NF": 0.05, "CM": 0.0}, breaks=[])
+    + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1.0, "size": 5}))
+    + pn.theme_bw()
+    + pn.labs(x="PC 0", y="PC 1", color="Disease\nStatus")
+    + pn.coord_equal()
+    + pn.theme(
+        legend_key=pn.element_rect(fill="white", color="white"),
+        legend_background=pn.element_rect(fill="white", color="black"),
+        axis_title_x=pn.element_text(size=16),
+        axis_title_y=pn.element_text(size=16),
+        axis_text=pn.element_text(size=13),
+    )
+)
+p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2_only_HF.pdf", verbose=False, dpi=300)
+
+########################################################################
+# Plot the archetype weigths in 2D
+########################################################################
+for arch_idx in range(n_archetypes):
+    p = (
+        pt.plot_archetypes_2D(
+            adata=adata,
+            dimensions=[0, 1],
+            show_contours=True,
+            color=f"weigths_for_arch_{arch_idx}",
+            alpha=0.05,
+            size=0.5,
+            result_filters={"n_archetypes": n_archetypes},
+        )
+        + pn.theme_bw()
+        + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1.0, "size": 5}))
+        + pn.labs(x="PC 0", y="PC 1")
+        + pn.coord_equal()
+        + pn.theme(
+            legend_key=pn.element_rect(fill="white", color="white"),
+            legend_background=pn.element_rect(fill="white", color="black"),
+            axis_title_x=pn.element_text(size=16),
+            axis_title_y=pn.element_text(size=16),
+            axis_text=pn.element_text(size=13),
+        )
+    )
+    p.save(
+        figure_dir / f"plot_archetypes_2D_weigths_{arch_idx}_pc0_pc_1.png",
+        verbose=False,
+    )
 
 ########################################################################
 # Assessing statistical significance of disease enrichment
@@ -767,20 +925,13 @@ ttest_results["reject_fdr_0p05"] = reject
 ttest_results.to_csv(output_dir / "ttest_results.csv", index=False)
 
 # O) boxplot with p-values from t-test
-ann = (
-    ttest_results.assign(
-        variable_clean=lambda d: d["dist_col"].str.replace(
-            "dist_to_arch_", "Archetype ", regex=False
-        ),
-        label=lambda d: d["p"].map(lambda p: f"p={p:.2g}"),
-    )
-    .loc[:, ["variable_clean", "label"]]
-)
-ypos = (
-    plot_df.groupby("variable_clean")["value"]
-    .max()
-    .reset_index(name="ymax")
-)
+ann = ttest_results.assign(
+    variable_clean=lambda d: d["dist_col"].str.replace(
+        "dist_to_arch_", "Archetype ", regex=False
+    ),
+    label=lambda d: d["p"].map(lambda p: f"p={p:.2g}"),
+).loc[:, ["variable_clean", "label"]]
+ypos = plot_df.groupby("variable_clean")["value"].max().reset_index(name="ymax")
 ypos["y"] = ypos["ymax"] * 1.03  # increase y-limit by ~8%
 
 ann = ann.merge(ypos[["variable_clean", "y"]], on="variable_clean", how="left")

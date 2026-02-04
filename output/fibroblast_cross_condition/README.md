@@ -51,9 +51,9 @@ Relevant references (as cited in the manuscript draft):
 These files are written to `figures/fibroblast_cross_condition` by the script.
 - `figures/fibroblast_cross_condition/dotplot_marker_dotplot.pdf` — Dotplot of generic marker genes across donors.
 - `figures/fibroblast_cross_condition/plot_shuffled_pca.pdf` — Shuffled PCA variance baseline for dimensionality choice (skipped with `--quick`).
-- `figures/fibroblast_cross_condition/plot_var_explained.pdf` — Variance explained across archetype counts (2–7).
-- `figures/fibroblast_cross_condition/plot_IC.pdf` — Information criterion across archetype counts (2–7).
-- `figures/fibroblast_cross_condition/plot_bootstrap_variance.pdf` — Bootstrap variance across archetype counts (2–7).
+- `figures/fibroblast_cross_condition/plot_var_explained.pdf` — Variance explained across archetype counts (2–7; not generated with `--quick`).
+- `figures/fibroblast_cross_condition/plot_IC.pdf` — Information criterion across archetype counts (2–7; not generated with `--quick`).
+- `figures/fibroblast_cross_condition/plot_bootstrap_variance.pdf` — Bootstrap variance across archetype counts (2–7; not generated with `--quick`).
 - `figures/fibroblast_cross_condition/plot_archetypes_2D.pdf` — 2D archetype geometry (3 archetypes) with contours.
 - `figures/fibroblast_cross_condition/plot_archetypes_2D.png` — PNG version of the 2D archetype geometry.
 - `figures/fibroblast_cross_condition/plot_bootstrap_2D.pdf` — 2D bootstrap stability for archetypes.
@@ -100,5 +100,5 @@ These files are written to `output/fibroblast_cross_condition` by the script.
 - `output/fibroblast_cross_condition/fibroblast_cross_condition_partipy.h5ad` — Processed AnnData object used for downstream plotting and tables.
 
 ## Notes and Potential Follow-Ups
-- `--quick` skips shuffled PCA and archetype selection metrics but still computes bootstrap variance for `n_archetypes=3`.
+- `--quick` skips shuffled PCA and archetype selection metrics, and only computes bootstrap variance for `n_archetypes=3` (without saving `plot_bootstrap_variance.pdf`).
 - The script writes a copy of the processed AnnData to `/home/pschaefer/fibroblast_cross_condition_partipy.h5ad`, which is outside the repository.

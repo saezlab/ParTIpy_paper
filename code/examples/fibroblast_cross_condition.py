@@ -330,20 +330,51 @@ pt.set_obsm(adata=adata, obsm_key=obsm_key, n_dimensions=obsm_dim)
 ########################################################################
 if not args.quick:
     pt.compute_selection_metrics(adata=adata, n_archetypes_list=range(2, 8))
-
-    p = pt.plot_var_explained(adata)
-    p.save(figure_dir / "plot_var_explained.pdf", verbose=False)
-
-    p = pt.plot_IC(adata)
-    p.save(figure_dir / "plot_IC.pdf", verbose=False)
-
     pt.compute_bootstrap_variance(
         adata=adata, n_bootstrap=50, n_archetypes_list=range(2, 8)
     )
 
-    p = pt.plot_bootstrap_variance(adata) + pn.theme_bw()
-    p.save(figure_dir / "plot_bootstrap_variance.pdf", verbose=False)
+    p = (
+        pt.plot_var_explained(adata)
+        + pn.theme_bw()
+        + pn.theme(
+            figure_size=(6, 3),
+            axis_title_x=pn.element_text(size=14),
+            axis_title_y=pn.element_text(size=14),
+            axis_text_x=pn.element_text(size=11),
+            axis_text_y=pn.element_text(size=11),
+        )
+        + pn.labs(x="Number of Archetypes")
+    )
+    p.save(figure_dir / "plot_var_explained.pdf", verbose=False)
 
+    p = (
+        pt.plot_IC(adata)
+        + pn.theme_bw()
+        + pn.theme(
+            figure_size=(6, 3),
+            axis_title_x=pn.element_text(size=14),
+            axis_title_y=pn.element_text(size=14),
+            axis_text_x=pn.element_text(size=11),
+            axis_text_y=pn.element_text(size=11),
+        )
+        + pn.labs(x="Number of Archetypes")
+    )
+    p.save(figure_dir / "plot_IC.pdf", verbose=False)
+
+    p = (
+        pt.plot_bootstrap_variance(adata)
+        + pn.theme_bw()
+        + pn.theme(
+            figure_size=(6, 3),
+            axis_title_x=pn.element_text(size=14),
+            axis_title_y=pn.element_text(size=14),
+            axis_text_x=pn.element_text(size=11),
+            axis_text_y=pn.element_text(size=11),
+        )
+        + pn.labs(x="Number of Archetypes")
+    )
+    p.save(figure_dir / "plot_bootstrap_variance.pdf", verbose=False)
 else:
     pt.compute_bootstrap_variance(
         adata=adata, n_bootstrap=50, n_archetypes_list=[n_archetypes]
@@ -364,7 +395,17 @@ p.save(figure_dir / "plot_archetypes_2D.png", verbose=False)
 p = (
     pt.plot_bootstrap_2D(adata, result_filters={"n_archetypes": n_archetypes})
     + pn.theme_bw()
+    + pn.theme(
+        figure_size=(6, 6),
+        axis_title_x=pn.element_text(size=14),
+        axis_title_y=pn.element_text(size=14),
+        axis_text_x=pn.element_text(size=11),
+        axis_text_y=pn.element_text(size=11),
+    )
+    + pn.labs(x="PC 0", y="PC 1")
 )
+p.save(figure_dir / "plot_bootstrap_2D.pdf", verbose=False)
+p.save(figure_dir / "plot_bootstrap_2D.png", verbose=False)
 p.save(figure_dir / "plot_bootstrap_2D.pdf", verbose=False)
 p.save(figure_dir / "plot_bootstrap_2D.png", verbose=False)
 

@@ -383,9 +383,21 @@ p = (
     )
     + pn.theme_bw()
     + pn.scale_color_manual(values=color_dict)
+    + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1.0, "size": 5}))
+    + pn.labs(x="PC 0", y="PC 1", color="Disease\nStatus")
+    + pn.coord_equal()
+    + pn.theme(
+        legend_key=pn.element_rect(fill="white", color="white"),
+        legend_background=pn.element_rect(fill="white", color="black"),
+    )
 )
-p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_1.pdf", verbose=False)
 p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_1.png", verbose=False)
+
+# save the limits for later
+fig = p.draw()  # forces build + draw
+ax = fig.axes[0]
+pc_0_limits = ax.get_xlim()
+pc_1_limits = ax.get_ylim()
 
 p = (
     pt.plot_archetypes_2D(
@@ -399,6 +411,13 @@ p = (
     )
     + pn.theme_bw()
     + pn.scale_color_manual(values=color_dict)
+    + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1.0, "size": 5}))
+    + pn.labs(x="PC 0", y="PC 2", color="Disease\nStatus")
+    + pn.coord_equal()
+    + pn.theme(
+        legend_key=pn.element_rect(fill="white", color="white"),
+        legend_background=pn.element_rect(fill="white", color="black"),
+    )
 )
 p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_2.pdf", verbose=False)
 p.save(figure_dir / "plot_archetypes_2D_disease_pc0_pc_2.png", verbose=False)
@@ -415,6 +434,13 @@ p = (
     )
     + pn.theme_bw()
     + pn.scale_color_manual(values=color_dict)
+    + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1.0, "size": 5}))
+    + pn.labs(x="PC 2", y="PC 1", color="Disease\nStatus")
+    + pn.coord_equal()
+    + pn.theme(
+        legend_key=pn.element_rect(fill="white", color="white"),
+        legend_background=pn.element_rect(fill="white", color="black"),
+    )
 )
 p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2.pdf", verbose=False)
 p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2.png", verbose=False)
@@ -553,7 +579,13 @@ p = (
         )
     )
     + pn.theme_bw()
+    + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1.0, "size": 5}))
     + pn.scale_color_manual(values=color_dict)
+    + pn.labs(x="PC 0", y="PC 1", color="Disease\nStatus")
+    + pn.theme(
+        legend_key=pn.element_rect(fill="white", color="white"),
+        legend_background=pn.element_rect(fill="white", color="black"),
+    )
 )
 if hull_df is not None:
     p += pn.geom_path(
@@ -564,6 +596,11 @@ if hull_df is not None:
         alpha=0.5,
     )
 p.save(figure_dir / "patient_pseudobulk_in_convex_hull.pdf", verbose=False)
+
+# now also save with the same limits as the single-cell scatter plot
+p += pn.coord_cartesian(xlim=pc_0_limits, ylim=pc_1_limits)
+p.save(figure_dir / "patient_pseudobulk_in_convex_hull_same_limits.pdf", verbose=False)
+
 
 # 6) compute the distance matrix
 dist_key = "euclidean"

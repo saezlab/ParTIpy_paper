@@ -40,7 +40,7 @@ Relevant references (as cited in the manuscript draft):
 9. **Meta-enrichment barplots.** Computes archetype weights, normalizes so each archetype’s weights sum to 1, and computes meta-enrichment for disease, original disease labels, cell types, and subclusters.
 10. **Disease association testing (patient-level).** Aggregates to donor-level pseudobulk, projects onto the archetype convex hull, computes distances, produces point and box plots of distance vs disease, runs Welch’s t-test with BH correction, and fits ridge logistic models with permutation p-values and bootstrap confidence bands.
 11. **Archetype gene expression characterization.** Computes archetype expression for `raw`, `log1p`, and `z_scaled`, writes a pivoted table, saves top genes per archetype (raw >= 1.0, top 50 by z-score), and generates a marker-gene heatmap.
-12. **TF activity (Collectri, ULM).** Runs ULM to estimate TF activity per archetype, writes a TF activity table, and plots a TF heatmap with significance marks (`p<=0.05`).
+12. **TF activity (Collectri, ULM).** Runs ULM to estimate TF activity per archetype, writes a TF activity table, saves top 15 significant TFs per archetype (`p<=0.05`), and plots a TF heatmap with significance marks (`p<=0.05`).
 13. **Pathway activity (PROGENy, ULM).** Runs ULM to estimate pathway activity per archetype, clusters pathways for ordering, and plots a pathway heatmap with significance marks.
 14. **Hallmark gene set activity (MSigDB Hallmark, ULM).** Filters hallmarks to sets with >=5 genes, runs ULM, writes the hallmark activity table, selects the top 5 positive hallmarks per archetype (`p<=0.05`), and plots a clustered heatmap.
 15. **Matrisome gene set activity (MSigDB NABA, ULM).** Uses NABA Matrisome sets (excluding several cancer-related sets), runs ULM, writes the matrisome activity table, and plots a clustered heatmap.
@@ -58,8 +58,7 @@ These files are written to `figures/fibroblast_cross_condition` by the script.
 - `figures/fibroblast_cross_condition/plot_archetypes_2D.png` — PNG version of the 2D archetype geometry.
 - `figures/fibroblast_cross_condition/plot_bootstrap_2D.pdf` — 2D bootstrap stability for archetypes.
 - `figures/fibroblast_cross_condition/plot_bootstrap_2D.png` — PNG version of the bootstrap plot.
-- `figures/fibroblast_cross_condition/plot_archetypes_2D_disease_pc0_pc_1.pdf` — Disease-colored 2D plot on PCs (0,1).
-- `figures/fibroblast_cross_condition/plot_archetypes_2D_disease_pc0_pc_1.png` — PNG version.
+- `figures/fibroblast_cross_condition/plot_archetypes_2D_disease_pc0_pc_1.png` — Disease-colored 2D plot on PCs (0,1).
 - `figures/fibroblast_cross_condition/plot_archetypes_2D_disease_pc0_pc_2.pdf` — Disease-colored 2D plot on PCs (0,2).
 - `figures/fibroblast_cross_condition/plot_archetypes_2D_disease_pc0_pc_2.png` — PNG version.
 - `figures/fibroblast_cross_condition/plot_archetypes_2D_disease_pc1_pc_2.pdf` — Disease-colored 2D plot on PCs (1,2).
@@ -69,6 +68,7 @@ These files are written to `figures/fibroblast_cross_condition` by the script.
 - `figures/fibroblast_cross_condition/barplot_meta_enrichment_celltypes_original.pdf` — Archetype enrichment by original cell type labels.
 - `figures/fibroblast_cross_condition/barplot_meta_enrichment_cellstate_original.pdf` — Archetype enrichment by `SubCluster`.
 - `figures/fibroblast_cross_condition/patient_pseudobulk_in_convex_hull.pdf` — Donor-level pseudobulk positions within the archetype convex hull.
+- `figures/fibroblast_cross_condition/patient_pseudobulk_in_convex_hull_same_limits.pdf` — Same pseudobulk convex-hull plot using the PC0/PC1 axis limits from the single-cell disease plot.
 - `figures/fibroblast_cross_condition/patient_pseudobulk_distance_point_plot.pdf` — Jittered distances to each archetype by disease.
 - `figures/fibroblast_cross_condition/patient_pseudobulk_distance_boxplot.pdf` — Boxplots of distances to each archetype by disease.
 - `figures/fibroblast_cross_condition/ridge_logit_bootCI_arch_0.pdf` — Ridge logistic fit for CM vs NF using distance to archetype 0.
@@ -90,6 +90,7 @@ These files are written to `output/fibroblast_cross_condition` by the script.
 - `output/fibroblast_cross_condition/archetype_expression_pivot.csv` — Archetype expression table (raw, log1p, z_scaled).
 - `output/fibroblast_cross_condition/top_genes_archetype_arch_*.csv` — Top 50 genes per archetype (raw >= 1.0).
 - `output/fibroblast_cross_condition/collectri_df.csv` — TF activity table from Collectri ULM. Columns: `archetype`, `TF`, `t_value`, `p_value`.
+- `output/fibroblast_cross_condition/archetype_*_top15_TFs.csv` — Top 15 TFs per archetype among significant Collectri hits (`p<=0.05`), ranked by `t_value`.
 - `output/fibroblast_cross_condition/progeny_df.csv` — PROGENy pathway activity table. Columns: `archetype`, `pathway`, `t_value`, `p_value`.
 - `output/fibroblast_cross_condition/hallmark_df.csv` — MSigDB Hallmark activity table. Columns: `archetype`, `hallmark`, `t_value`, `p_value`.
 - `output/fibroblast_cross_condition/matrisome_df.csv` — Matrisome activity table. Columns: `archetype`, `matrisome_set`, `t_value`, `p_value`.

@@ -1195,6 +1195,68 @@ p = (
 p.save(figure_dir / "gene_expression_tile_plot.pdf", verbose=False)
 
 ########################################################################
+# Count how many NF cells are closest to archetype 2
+########################################################################
+df = (
+    adata.obs.value_counts(["disease", "donor_id", "archetype_max_weight"])
+    .reset_index()
+    .query("archetype_max_weight==2")
+    .join(
+        adata.obs.value_counts("donor_id")
+        .reset_index()
+        .rename(columns={"count": "total_cells"})
+        .set_index("donor_id"),
+        on="donor_id",
+    )
+)
+df["fraction"] = df["count"] / df["total_cells"]
+
+df_nf = df.query("disease=='NF'").copy()
+df_nf = df_nf.sort_values("count", ascending=False)
+df_nf["donor_id"] = pd.Categorical(
+    df_nf["donor_id"],
+    categories=df_nf["donor_id"],
+    ordered=True,
+)
+
+order = df_nf.sort_values("count", ascending=False)["donor_id"].tolist()
+
+p = (
+    pn.ggplot(df_nf)
+    + pn.geom_col(pn.aes(x="donor_id", y="count", fill="fraction"), width=0.50, color="black")
+    + pn.scale_x_discrete(limits=order[::-1])  # reverse so largest ends up on top after coord_flip
+    + pn.coord_flip()
+    + pn.theme_bw()
+    + pn.labs(
+        x="Donor ID (only NF)",
+        y="Number of Cells Closest to Archetype 2",
+        fill="Fraction of\nCells Closeset\nto Archetype 2",
+    )
+    + pn.scale_fill_gradient2(
+        low="#f7fbff",  # very light
+        high="#2d8b2a",  # dark
+        limits=(0, df_nf["fraction"].max()),
+        oob=squish,
+    )
+    + pn.theme(
+        figure_size=(4, 9),
+
+        legend_position="top",
+        legend_direction="horizontal",
+
+        axis_title_x=pn.element_text(size=12),
+        axis_title_y=pn.element_text(size=12),
+
+        axis_text_x=pn.element_text(size=11),
+        axis_text_y=pn.element_text(size=11),
+
+        legend_title=pn.element_text(size=12),
+        legend_text=pn.element_text(size=10),
+    )
+)
+p.save(figure_dir / "nf_cells_close_to_archetype_2.pdf", verbose=False)
+
+########################################################################
 # Characterize archetypal TF activation
 ########################################################################
 collectri = dc.op.collectri(organism="human")

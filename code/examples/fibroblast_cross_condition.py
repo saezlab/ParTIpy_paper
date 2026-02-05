@@ -1197,6 +1197,9 @@ p.save(figure_dir / "gene_expression_tile_plot.pdf", verbose=False)
 ########################################################################
 # Count how many NF cells are closest to archetype 2
 ########################################################################
+aa_out = pt.get_aa_result(adata, n_archetypes=3)
+adata.obs["archetype_max_weight"] = aa_out["A"].argmax(axis=1)
+del aa_out
 df = (
     adata.obs.value_counts(["disease", "donor_id", "archetype_max_weight"])
     .reset_index()
@@ -1210,6 +1213,7 @@ df = (
     )
 )
 df["fraction"] = df["count"] / df["total_cells"]
+df.to_csv(output_dir / "archetype_2_cell_counts.csv")
 
 df_nf = df.query("disease=='NF'").copy()
 df_nf = df_nf.sort_values("count", ascending=False)
@@ -1621,7 +1625,6 @@ p.save(figure_dir / "matrisome_tile_plot.pdf", verbose=False)
 pt.write_h5ad(adata, output_dir / "fibroblast_cross_condition_partipy.h5ad")
 pt.write_h5ad(adata, "/home/pschaefer/fibroblast_cross_condition_partipy.h5ad")
 
-
 ########################################################################
 # Integration vs No-Integration Test
 ########################################################################
@@ -1742,3 +1745,15 @@ for n_archetypes_test in [3, 4]:
     )
     p.save(figure_dir / f"aa_with_and_without_harmony_{n_archetypes_test}.pdf")
     del plot_df
+
+########################################################################
+# Compute gene enrichment per archetype
+########################################################################
+gene_mask = adata.var.index[adata.var["n_cells"] > 100].to_list()
+adata_ge = adata[:, gene_mask].copy()
+
+enrichment_df = pt.compute_quantile_based_gene_enrichment(
+    adata_ge, result_filters={"n_archetypes": 4}, verbose=True
+)
+
+enrichment_df.to_csv(output_dir / "enrichment_df.csv")

@@ -1145,12 +1145,6 @@ arch_expr_long = arch_expr_long.pivot_table(
 ).reset_index()
 arch_expr_long.columns.name = None
 
-# Optional: stable column order
-col_order = ["archetype", "gene", "raw", "log1p", "z_scaled"]
-arch_expr_long = arch_expr_long.reindex(
-    columns=[c for c in col_order if c in arch_expr_long.columns]
-)
-
 arch_expr_long.to_csv(output_dir / "archetype_expression_pivot.csv", index=False)
 
 # Save top genes per archetype with a raw-expression threshold
@@ -1647,8 +1641,14 @@ enrichment_df.to_csv(output_dir / "enrichment_df.csv", index=False)
 ########################################################################
 # Compare quantile-based enrichment vs. kernel aggregation
 ########################################################################
+arch_expr_long_copy = arch_expr_long.copy()
+arch_expr_long_copy["arch_idx"] = (
+    arch_expr_long_copy["archetype"].str.extract(r"arch_([0-9]+)").astype(int)
+)
+arch_expr_long_copy = arch_expr_long_copy.drop(columns=["archetype"])
+
 comparison_df = enrichment_df.join(
-    arch_expr_long.set_index(["arch_idx", "gene"]), on=["arch_idx", "gene"], how="left"
+    arch_expr_long_copy.set_index(["arch_idx", "gene"]), on=["arch_idx", "gene"], how="left"
 )
 comparison_df.to_csv(output_dir / "comparison_df.csv", index=False)
 
@@ -1679,8 +1679,8 @@ p = (
     + pn.geom_text(
         corr_df, pn.aes(x="x", y="y", label="label"), ha="left", va="top", size=8
     )
-    + pn.facet_wrap("arch_idx")
-    + pn.labs(x="z-scored Gene Expression", y="Test Statistic", color="Enriched")
+    + pn.facet_wrap("arch_idx", ncol=3)
+    + pn.labs(x="z-scored Gene Expression", y="Quantile-Based Enrichment Test Statistic", color="Enriched")
     + pn.theme_bw()
     + pn.theme(
         figure_size=(9, 3),

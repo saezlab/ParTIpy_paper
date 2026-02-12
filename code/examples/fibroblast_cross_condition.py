@@ -24,7 +24,7 @@ import scipy.cluster.hierarchy as sch
 from scipy.spatial.distance import pdist
 import harmonypy as hm
 from scipy.optimize import linear_sum_assignment
-from scipy.stats import ttest_ind
+from scipy.stats import ttest_ind, pearsonr
 
 
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH, DATA_PATH
@@ -621,7 +621,11 @@ p = (
         axis_text=pn.element_text(size=13),
     )
 )
-p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2_only_CM.png", verbose=False, dpi=300)
+p.save(
+    figure_dir / "plot_archetypes_2D_disease_pc1_pc_2_only_CM.png",
+    verbose=False,
+    dpi=300,
+)
 
 p = (
     pt.plot_archetypes_2D(
@@ -653,7 +657,11 @@ p = (
         axis_text=pn.element_text(size=13),
     )
 )
-p.save(figure_dir / "plot_archetypes_2D_disease_pc1_pc_2_only_HF.pdf", verbose=False, dpi=300)
+p.save(
+    figure_dir / "plot_archetypes_2D_disease_pc1_pc_2_only_HF.pdf",
+    verbose=False,
+    dpi=300,
+)
 
 ########################################################################
 # Plot the archetype weigths in 2D
@@ -1213,7 +1221,7 @@ df = (
     )
 )
 df["fraction"] = df["count"] / df["total_cells"]
-df.to_csv(output_dir / "archetype_2_cell_counts.csv")
+df.to_csv(output_dir / "archetype_2_cell_counts.csv", index=False)
 
 df_nf = df.query("disease=='NF'").copy()
 df_nf = df_nf.sort_values("count", ascending=False)
@@ -1227,8 +1235,12 @@ order = df_nf.sort_values("count", ascending=False)["donor_id"].tolist()
 
 p = (
     pn.ggplot(df_nf)
-    + pn.geom_col(pn.aes(x="donor_id", y="count", fill="fraction"), width=0.50, color="black")
-    + pn.scale_x_discrete(limits=order[::-1])  # reverse so largest ends up on top after coord_flip
+    + pn.geom_col(
+        pn.aes(x="donor_id", y="count", fill="fraction"), width=0.50, color="black"
+    )
+    + pn.scale_x_discrete(
+        limits=order[::-1]
+    )  # reverse so largest ends up on top after coord_flip
     + pn.coord_flip()
     + pn.theme_bw()
     + pn.labs(
@@ -1244,16 +1256,12 @@ p = (
     )
     + pn.theme(
         figure_size=(4, 9),
-
         legend_position="top",
         legend_direction="horizontal",
-
         axis_title_x=pn.element_text(size=12),
         axis_title_y=pn.element_text(size=12),
-
         axis_text_x=pn.element_text(size=11),
         axis_text_y=pn.element_text(size=11),
-
         legend_title=pn.element_text(size=12),
         legend_text=pn.element_text(size=10),
     )
@@ -1626,6 +1634,72 @@ pt.write_h5ad(adata, output_dir / "fibroblast_cross_condition_partipy.h5ad")
 pt.write_h5ad(adata, "/home/pschaefer/fibroblast_cross_condition_partipy.h5ad")
 
 ########################################################################
+# Compute gene enrichment per archetype
+########################################################################
+gene_mask = adata.var.index[adata.var["n_cells"] > 100].to_list()
+adata_ge = adata[:, gene_mask].copy()
+
+enrichment_df = pt.compute_quantile_based_gene_enrichment(
+    adata_ge, result_filters={"n_archetypes": 3}, verbose=True
+)
+enrichment_df.to_csv(output_dir / "enrichment_df.csv", index=False)
+
+########################################################################
+# Compare quantile-based enrichment vs. kernel aggregation
+########################################################################
+comparison_df = enrichment_df.join(
+    arch_expr_long.set_index(["arch_idx", "gene"]), on=["arch_idx", "gene"], how="left"
+)
+comparison_df.to_csv(output_dir / "comparison_df.csv", index=False)
+
+
+def helper_compute_corr(df):
+    r, p = pearsonr(df["z_scaled"], df["stat"])
+    return pd.Series({"r": r, "p": p, "label": f"r = {r:.2f}\np = {p:.2e}"})
+
+
+corr_df = comparison_df.groupby("arch_idx", as_index=False).apply(helper_compute_corr)
+
+pos_df = (
+    comparison_df.groupby("arch_idx")
+    .agg(x=("z_scaled", "min"), y=("stat", "max"))
+    .reset_index()
+)
+
+corr_df = corr_df.merge(pos_df, on="arch_idx")
+
+p = (
+    pn.ggplot(comparison_df)
+    + pn.geom_point(
+        pn.aes(x="z_scaled", y="stat", color="enriched"), alpha=0.5, size=1.0
+    )
+    + pn.geom_smooth(
+        pn.aes(x="z_scaled", y="stat"), method="lm", alpha=0.5, color="grey"
+    )
+    + pn.geom_text(
+        corr_df, pn.aes(x="x", y="y", label="label"), ha="left", va="top", size=8
+    )
+    + pn.facet_wrap("arch_idx")
+    + pn.labs(x="z-scored Gene Expression", y="Test Statistic", color="Enriched")
+    + pn.theme_bw()
+    + pn.theme(
+        figure_size=(9, 3),
+        axis_title_x=pn.element_text(size=14),
+        axis_title_y=pn.element_text(size=14),
+        axis_text_x=pn.element_text(size=11),
+        axis_text_y=pn.element_text(size=11),
+        legend_title=pn.element_text(size=12),
+        legend_text=pn.element_text(size=9),
+        strip_background=pn.element_rect(fill="white", color="black"),
+        strip_text=pn.element_text(color="black"),
+    )
+    + pn.guides(color=pn.guide_legend(override_aes={"alpha": 1, "size": 3}))
+)
+p.save(figure_dir / "enrichment_comparison_scatter_plot.pdf", verbose=False)
+p.save(figure_dir / "enrichment_comparison_scatter_plot.png", verbose=False, dpi=300)
+
+
+########################################################################
 # Integration vs No-Integration Test
 ########################################################################
 def pearsonr_per_row(mtx_1: np.ndarray, mtx_2: np.ndarray, return_pval: bool = False):
@@ -1745,15 +1819,3 @@ for n_archetypes_test in [3, 4]:
     )
     p.save(figure_dir / f"aa_with_and_without_harmony_{n_archetypes_test}.pdf")
     del plot_df
-
-########################################################################
-# Compute gene enrichment per archetype
-########################################################################
-gene_mask = adata.var.index[adata.var["n_cells"] > 100].to_list()
-adata_ge = adata[:, gene_mask].copy()
-
-enrichment_df = pt.compute_quantile_based_gene_enrichment(
-    adata_ge, result_filters={"n_archetypes": 4}, verbose=True
-)
-
-enrichment_df.to_csv(output_dir / "enrichment_df.csv")

@@ -94,7 +94,9 @@ python -m code.examples.hepatocyte_example
 ```bash
 mamba activate partipy
 
-python -m code.examples.fibroblast_cross_condition
+mamba list --name base | awk '{print $1}' | \
+  grep -vE '^(#|'"$(paste -sd'|' keep.txt)"')$' \
+  > remove.txt
 python -m code.examples.fibroblast_cross_condition --quick
 ```
 

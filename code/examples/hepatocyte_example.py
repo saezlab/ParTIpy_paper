@@ -250,6 +250,9 @@ for arch_idx in range(n_archetypes):
     )
     p.save(figure_dir / f"plot_archetypes_2D_weights_{arch_idx}.pdf")
 
+    top_processes[arch_idx][f"neg_log10_pval_{arch_idx}"] = - np.log10(top_processes[arch_idx][f"pval_{arch_idx}"])
+    top_processes[arch_idx]["Process"] = top_processes[arch_idx]["Process"].str.replace("REACTOME_", "")
+    
     top_processes[arch_idx]["Process"] = pd.Categorical(
         top_processes[arch_idx]["Process"],
         categories=top_processes[arch_idx]
@@ -259,10 +262,12 @@ for arch_idx in range(n_archetypes):
 
     p = (
         pn.ggplot(top_processes[arch_idx])
-        + pn.geom_col(pn.aes(x="Process", y=f"{arch_idx}"))
+        + pn.geom_col(pn.aes(x="Process", y=f"act_{arch_idx}", fill=f"neg_log10_pval_{arch_idx}"))
         + pn.coord_flip()
         + pn.theme_bw()
-        + pn.theme(figure_size=(10, 3))
+        + pn.theme(figure_size=(9, 3))
+        + pn.labs(x="", y=f"t-value in Archetype {arch_idx}", fill="$-\log10(P_{adj})$")
+        + pn.scale_fill_gradient(low="#c8f9b9", high="#006d2c")
     )
     p.save(figure_dir / f"plot_top_processes_{arch_idx}.pdf")
 
@@ -350,6 +355,11 @@ fig = plot_weighted_network(
     return_fig=True,
 )
 fig.savefig(figure_dir / "crosstalk.pdf")
+
+########################################################################
+# Save final adata object
+########################################################################
+pt.write_h5ad(adata, output_dir / "hepatocyte.h5ad")
 
 ########################################################################
 # Characterize archetypal gene expression

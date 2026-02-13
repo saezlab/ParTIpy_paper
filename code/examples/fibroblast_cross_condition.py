@@ -272,14 +272,14 @@ adata = adata[
     :,
 ].copy()
 
-# add binned age categories
-adata.obs["age_group"] = pd.cut(
-    adata.obs["age"],
-    bins=[0, 40, 50, 60, 70],
-    labels=["<40", "40-49", "50-59", "60-69"],
-    include_lowest=True,
-    ordered=True,
-).astype(str)
+# add binned age categories (not used at the moment)
+# adata.obs["age_group"] = pd.cut(
+#    adata.obs["age"],
+#    bins=[0, 40, 50, 60, 70],
+#    labels=["<40", "40-49", "50-59", "60-69"],
+#    include_lowest=True,
+#    ordered=True,
+# ).astype(str)
 
 # add QC variables
 adata.var["mt"] = adata.var_names.str.startswith("MT-")
@@ -326,10 +326,11 @@ _ = sc.pl.dotplot(
 # integration using harmony
 ho = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id")
 adata.obsm["X_pca_harmony"] = ho.Z_corr.copy()
+del ho
 
-ho2 = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id", tau=1e3)
-adata.obsm["X_pca_harmony_tau1e3"] = ho2.Z_corr.copy()
-del ho, ho2
+# ho2 = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id", tau=1e3)
+# adata.obsm["X_pca_harmony_tau1e3"] = ho2.Z_corr.copy()
+# del ho2
 
 ########################################################################
 # Determine the number of principal components to consider for AA
@@ -394,9 +395,6 @@ if not args.quick:
     )
     p.save(figure_dir / "plot_bootstrap_variance.pdf", verbose=False)
 else:
-    pt.compute_bootstrap_variance(
-        adata=adata, n_bootstrap=50, n_archetypes_list=[n_archetypes]
-    )
     print("Skipping archetype selection metrics because --quick was set.")
 p = (
     pt.plot_archetypes_2D(
@@ -940,7 +938,7 @@ ann = ttest_results.assign(
     label=lambda d: d["p"].map(lambda p: f"p={p:.2g}"),
 ).loc[:, ["variable_clean", "label"]]
 ypos = plot_df.groupby("variable_clean")["value"].max().reset_index(name="ymax")
-ypos["y"] = ypos["ymax"] * 1.03  # increase y-limit by ~8%
+ypos["y"] = ypos["ymax"] * 1.03
 
 ann = ann.merge(ypos[["variable_clean", "y"]], on="variable_clean", how="left")
 
@@ -960,7 +958,7 @@ p = (
     )
     + pn.facet_wrap("variable_clean", ncol=n_archetypes)
     + pn.scale_color_manual(values=color_dict)
-    + pn.scale_y_continuous(expand=(0.05, 0.10))  # ← increases upper y-limit
+    + pn.scale_y_continuous(expand=(0.05, 0.10))
     + pn.theme_bw()
     + pn.theme(
         figure_size=(3, 3),
@@ -1648,7 +1646,9 @@ arch_expr_long_copy["arch_idx"] = (
 arch_expr_long_copy = arch_expr_long_copy.drop(columns=["archetype"])
 
 comparison_df = enrichment_df.join(
-    arch_expr_long_copy.set_index(["arch_idx", "gene"]), on=["arch_idx", "gene"], how="left"
+    arch_expr_long_copy.set_index(["arch_idx", "gene"]),
+    on=["arch_idx", "gene"],
+    how="left",
 )
 comparison_df.to_csv(output_dir / "comparison_df.csv", index=False)
 
@@ -1680,7 +1680,11 @@ p = (
         corr_df, pn.aes(x="x", y="y", label="label"), ha="left", va="top", size=8
     )
     + pn.facet_wrap("arch_idx", ncol=3)
-    + pn.labs(x="z-scored Gene Expression", y="Quantile-Based Enrichment Test Statistic", color="Enriched")
+    + pn.labs(
+        x="z-scored Gene Expression",
+        y="Quantile-Based Enrichment Test Statistic",
+        color="Enriched",
+    )
     + pn.theme_bw()
     + pn.theme(
         figure_size=(9, 3),

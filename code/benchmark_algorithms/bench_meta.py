@@ -15,6 +15,9 @@ figure_dir.mkdir(exist_ok=True, parents=True)
 output_dir = Path(OUTPUT_PATH) / "bench_meta"
 output_dir.mkdir(exist_ok=True, parents=True)
 
+source_data = Path(OUTPUT_PATH) / "source_data"
+source_data.mkdir(exist_ok=True, parents=True)
+
 df_0 = pd.read_csv(Path("output") / "ms_bench" / "results.csv")
 df_0["dataset"] = "ms"
 
@@ -79,6 +82,8 @@ df_settings["dataset_long"] = df_settings["dataset"].map({
     "ms_xenium": "Kukanja et al., 2024",
     "lupus": "Perez et al., 2022"
 })
+
+df_summary.to_csv(source_data / "figure_2_panel_A.csv", index=False)
 
 p1 = (pn.ggplot(df_summary) 
      + pn.geom_hline(yintercept=0) 

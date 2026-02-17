@@ -15,6 +15,7 @@ from partipy.crosstalk import (
     plot_weighted_network,
 )
 from scipy.stats import pearsonr
+from partipy.paretoti import summarize_aa_metrics
 
 from ..utils.const import FIGURE_PATH, OUTPUT_PATH
 
@@ -24,6 +25,9 @@ figure_dir.mkdir(exist_ok=True, parents=True)
 
 output_dir = Path(OUTPUT_PATH) / "hepatocyte_example"
 output_dir.mkdir(exist_ok=True, parents=True)
+
+source_data = Path(OUTPUT_PATH) / "source_data"
+source_data.mkdir(exist_ok=True, parents=True)
 
 # input
 data_directory = Path("data")
@@ -48,6 +52,11 @@ p.save(figure_dir / "plot_shuffled_pca.pdf")
 # archetype selection metrics
 pt.compute_selection_metrics(adata=adata, min_k=2, max_k=8)
 
+plot_df = summarize_aa_metrics(adata)
+plot_df.to_csv(source_data / "figure_3_panel_A.csv", index=False)
+plot_df.to_csv(source_data / "figure_3_panel_B.csv", index=False)
+plot_df.to_csv(source_data / "EV_1_panel_A.csv", index=False)
+
 p = pt.plot_var_explained(adata)
 p.save(figure_dir / "plot_var_explained.pdf")
 
@@ -57,6 +66,16 @@ p.save(figure_dir / "plot_IC.pdf")
 # bootstrapping
 pt.compute_bootstrap_variance(
     adata=adata, n_bootstrap=50, n_archetypes_list=range(2, 9)
+)
+
+pd.DataFrame(adata.obsm["X_pca"][:, :2], columns=["X_pca_0", "X_pca_1"]).to_csv(
+    source_data / "figure_3_panel_C_part_1.csv", index=False
+)
+pt.get_aa_bootstrap(adata, n_archetypes=4).to_csv(
+    source_data / "figure_3_panel_C_part_2.csv", index=False
+)
+pt.get_aa_bootstrap(adata, n_archetypes=4).to_csv(
+    source_data / "EV_1_panel_B.csv", index=False
 )
 
 p = pt.plot_bootstrap_variance(adata)
@@ -235,8 +254,15 @@ top_processes = pt.extract_enriched_processes(
     est=acts_ulm_est, pval=acts_ulm_est_p, order="desc", n=10, p_threshold=0.05
 )
 
+df_panel_D_df = pd.DataFrame(adata.obsm["X_pca"][:, :2], columns=["X_pca_0", "X_pca_1"])
+df_panel_E_df = []
+
 for arch_idx in range(n_archetypes):
     adata.obs[f"weights_archetype_{arch_idx}"] = pt.get_aa_cell_weights(
+        adata, n_archetypes=n_archetypes
+    )[:, arch_idx]
+
+    df_panel_D_df[f"weights_archetype_{arch_idx}"] = pt.get_aa_cell_weights(
         adata, n_archetypes=n_archetypes
     )[:, arch_idx]
 
@@ -250,9 +276,13 @@ for arch_idx in range(n_archetypes):
     )
     p.save(figure_dir / f"plot_archetypes_2D_weights_{arch_idx}.pdf")
 
-    top_processes[arch_idx][f"neg_log10_pval_{arch_idx}"] = - np.log10(top_processes[arch_idx][f"pval_{arch_idx}"])
-    top_processes[arch_idx]["Process"] = top_processes[arch_idx]["Process"].str.replace("REACTOME_", "")
-    
+    top_processes[arch_idx][f"neg_log10_pval_{arch_idx}"] = -np.log10(
+        top_processes[arch_idx][f"pval_{arch_idx}"]
+    )
+    top_processes[arch_idx]["Process"] = top_processes[arch_idx]["Process"].str.replace(
+        "REACTOME_", ""
+    )
+
     top_processes[arch_idx]["Process"] = pd.Categorical(
         top_processes[arch_idx]["Process"],
         categories=top_processes[arch_idx]
@@ -260,9 +290,13 @@ for arch_idx in range(n_archetypes):
         .to_list(),
     )
 
+    df_panel_E_df.append(top_processes[arch_idx])
+
     p = (
         pn.ggplot(top_processes[arch_idx])
-        + pn.geom_col(pn.aes(x="Process", y=f"act_{arch_idx}", fill=f"neg_log10_pval_{arch_idx}"))
+        + pn.geom_col(
+            pn.aes(x="Process", y=f"act_{arch_idx}", fill=f"neg_log10_pval_{arch_idx}")
+        )
         + pn.coord_flip()
         + pn.theme_bw()
         + pn.theme(figure_size=(9, 3))
@@ -270,6 +304,11 @@ for arch_idx in range(n_archetypes):
         + pn.scale_fill_gradient(low="#c8f9b9", high="#006d2c")
     )
     p.save(figure_dir / f"plot_top_processes_{arch_idx}.pdf")
+
+df_panel_D_df.to_csv(source_data / "figure_3_panel_D.csv", index=False)
+df_panel_D_df.to_csv(source_data / "EV_1_panel_D.csv", index=False)
+pd.concat(df_panel_E_df).to_csv(source_data / "figure_3_panel_E.csv", index=False)
+pd.concat(df_panel_E_df).to_csv(source_data / "EV_1_panel_E.csv", index=False)
 
 # spatial mapping
 vizgen_adata = sq.read.vizgen(
@@ -322,6 +361,8 @@ plotting_df = plotting_df.sample(frac=0.5, random_state=42)  # make pdf plots sm
 plotting_df = plotting_df.melt(
     id_vars=["x", "y"], value_name="score", var_name="archetype"
 )
+plotting_df.to_csv(source_data / "figure_3_panel_F.csv", index=False)
+plotting_df.to_csv(source_data / "EV_1_panel_F.csv", index=False)
 
 p = (
     pn.ggplot(plotting_df)
@@ -346,6 +387,16 @@ archetype_crosstalk = get_archetype_crosstalk(
     archetype_genes=specific_genes_per_archetype, lr_resource=mouse_resource
 )
 
+flat_df = pd.concat(
+    [
+        df.assign(sender_archetype=sender_arch, receiver_archetype=receiver_arch)
+        for sender_arch, receivers in archetype_crosstalk.items()
+        for receiver_arch, df in receivers.items()
+    ],
+    ignore_index=True,
+)
+flat_df.to_csv(source_data / "EV_1_panel_C.csv", index=False)
+
 fig = plot_weighted_network(
     specific_genes_per_archetype=specific_genes_per_archetype,
     archetype_crosstalk_dict=archetype_crosstalk,
@@ -365,7 +416,9 @@ pt.write_h5ad(adata, output_dir / "hepatocyte.h5ad")
 # Characterize archetypal gene expression
 ########################################################################
 arch_expr = {
-    "log1p": pt.compute_archetype_expression(adata=adata, layer=None),  # assumes log1p in .X
+    "log1p": pt.compute_archetype_expression(
+        adata=adata, layer=None
+    ),  # assumes log1p in .X
     "z_scaled": pt.compute_archetype_expression(adata=adata, layer="z_scaled"),
 }
 
@@ -412,7 +465,9 @@ arch_expr_long_copy["arch_idx"] = (
 arch_expr_long_copy = arch_expr_long_copy.drop(columns=["archetype"])
 
 comparison_df = enrichment_df.join(
-    arch_expr_long_copy.set_index(["arch_idx", "gene"]), on=["arch_idx", "gene"], how="left"
+    arch_expr_long_copy.set_index(["arch_idx", "gene"]),
+    on=["arch_idx", "gene"],
+    how="left",
 )
 comparison_df.to_csv(output_dir / "comparison_df.csv", index=False)
 

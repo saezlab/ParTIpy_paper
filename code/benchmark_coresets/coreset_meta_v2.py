@@ -16,6 +16,9 @@ figure_dir.mkdir(exist_ok=True, parents=True)
 output_dir = Path(OUTPUT_PATH) / "coreset_meta_v2"
 output_dir.mkdir(exist_ok=True, parents=True)
 
+source_data = Path(OUTPUT_PATH) / "source_data"
+source_data.mkdir(exist_ok=True, parents=True)
+
 df_0_plotting = pd.read_csv(Path("output") / "ms_coreset_v2" / "results.csv")
 df_0_plotting["dataset"] = "ms"
 df_0_meta = pd.read_csv(Path("output") / "ms_coreset_v2" / "results.csv")[
@@ -69,6 +72,8 @@ archetype_colors = {
 }
 
 df["n_archetypes"] = pd.Categorical(df["n_archetypes"])
+df.to_csv(source_data / "figure_2_panel_B.csv", index=False)
+df.to_csv(source_data / "figure_2_panel_C.csv", index=False)
 
 p = (
     pn.ggplot(df, mapping=pn.aes(x="n_samples", y="time_saving"))

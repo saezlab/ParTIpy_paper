@@ -49,6 +49,9 @@ sc.settings.figdir = figure_dir
 output_dir = Path(OUTPUT_PATH) / "fibroblast_cross_condition"
 output_dir.mkdir(exist_ok=True, parents=True)
 
+source_data = Path(OUTPUT_PATH) / "source_data"
+source_data.mkdir(exist_ok=True, parents=True)
+
 ########################################################################
 # Setup color schemes
 ########################################################################
@@ -328,7 +331,7 @@ ho = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id")
 adata.obsm["X_pca_harmony"] = ho.Z_corr.copy()
 del ho
 
-# ho2 = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id", tau=1e3)
+# ho2 = hm.run_harmony(adata.obsm["X_pca"], adata.obs[["donor_id"]], "donor_id", tau=1e3) # doesn't really change the result
 # adata.obsm["X_pca_harmony_tau1e3"] = ho2.Z_corr.copy()
 # del ho2
 
@@ -339,6 +342,7 @@ if not args.quick:
     pt.compute_shuffled_pca(adata, mask_var="highly_variable", n_shuffle=25)
     p = pt.plot_shuffled_pca(adata) + pn.theme_bw()
     p.save(figure_dir / "plot_shuffled_pca.pdf", verbose=False)
+    adata.uns["AA_pca"].to_csv(source_data / "EV_2_panel_A.csv", index=False)
 else:
     print("Skipping shuffled PCA because --quick was set.")
 
@@ -349,9 +353,18 @@ pt.set_obsm(adata=adata, obsm_key=obsm_key, n_dimensions=obsm_dim)
 ########################################################################
 if not args.quick:
     pt.compute_selection_metrics(adata=adata, n_archetypes_list=range(2, 8))
+    pt.summarize_aa_metrics(adata).to_csv(source_data / "EV_2_panel_B.csv", index=False)
+    pt.summarize_aa_metrics(adata).to_csv(source_data / "EV_2_panel_C.csv", index=False)
+    
     pt.compute_bootstrap_variance(
         adata=adata, n_bootstrap=50, n_archetypes_list=range(2, 8)
     )
+    df_tmp_list = []
+    for n_archs_tmp in range(2, 8):
+        df_tmp_list.append(pt.get_aa_bootstrap(adata, n_archetypes=n_archs_tmp).assign(n_archetypes=n_archs_tmp))
+    pd.concat(df_tmp_list).to_csv(source_data / "EV_2_panel_D.csv", index=False)
+    pd.concat(df_tmp_list).to_csv(source_data / "EV_2_panel_E.csv", index=False)
+    del df_tmp_list, n_archs_tmp
 
     p = (
         pt.plot_var_explained(adata)
@@ -428,6 +441,12 @@ p.save(figure_dir / "plot_bootstrap_2D.png", verbose=False)
 ########################################################################
 # Some 2D plots
 ########################################################################
+df_panel_B_df = pd.DataFrame(adata.obsm["X_pca_harmony"][:, :2], columns=["X_pca_harmony_0", "X_pca_harmony_1"])
+df_panel_B_df["disease"] = adata.obs["disease"].to_numpy().copy()
+df_panel_B_df.to_csv(source_data / "figure_4_panel_B.csv", index=False)
+df_panel_B_df.to_csv(source_data / "EV_2_panel_F.csv", index=False)
+df_panel_B_df.to_csv(source_data / "EV_2_panel_G.csv", index=False)
+
 p = (
     pt.plot_archetypes_2D(
         adata=adata,
@@ -805,6 +824,10 @@ if hull_df is not None:
     )
 p.save(figure_dir / "patient_pseudobulk_in_convex_hull.pdf", verbose=False)
 
+obs_agg.to_csv(source_data / "figure_4_panel_C_part_1.csv", index=False)
+archetype_df.to_csv(source_data / "figure_4_panel_C_part_2.csv", index=False)
+hull_df.to_csv(source_data / "figure_4_panel_C_part_3.csv", index=False)
+
 # now also save with the same limits as the single-cell scatter plot
 p += pn.coord_cartesian(xlim=pc_0_limits, ylim=pc_1_limits)
 p.save(figure_dir / "patient_pseudobulk_in_convex_hull_same_limits.pdf", verbose=False)
@@ -897,7 +920,6 @@ if len(na_counts) > 0:
 dist_cols = [c for c in obs_agg.columns if c.startswith("dist_to_arch_")]
 g0, g1 = "NF", "CM"
 
-# ---------------------------
 rows = []
 for c in dist_cols:
     x = obs_agg.loc[obs_agg["disease"] == g0, c].astype(float).dropna().to_numpy()
@@ -972,6 +994,9 @@ p.save(
     figure_dir / "patient_pseudobulk_distance_boxplot_with_pvals.pdf",
     verbose=False,
 )
+
+plot_df.to_csv(source_data / "figure_4_panel_D_part_1.csv", index=False)
+ann.to_csv(source_data / "figure_4_panel_D_part_2.csv", index=False)
 
 # b) binary outcome regression
 obs_agg["outcome"] = (obs_agg[y_col] == y_col_one).astype(int)
@@ -1194,6 +1219,8 @@ p = (
 )
 p.save(figure_dir / "gene_expression_tile_plot.pdf", verbose=False)
 
+plot_df.to_csv(source_data / "figure_4_panel_E.csv", index=False)
+
 ########################################################################
 # Count how many NF cells are closest to archetype 2
 ########################################################################
@@ -1238,7 +1265,7 @@ p = (
     + pn.labs(
         x="Donor ID (only NF)",
         y="Number of Cells Closest to Archetype 2",
-        fill="Fraction of\nCells Closeset\nto Archetype 2",
+        fill="Fraction of\nCells Closest\nto Archetype 2",
     )
     + pn.scale_fill_gradient2(
         low="#f7fbff",  # very light
@@ -1259,6 +1286,8 @@ p = (
     )
 )
 p.save(figure_dir / "nf_cells_close_to_archetype_2.pdf", verbose=False)
+
+df_nf.to_csv(source_data / "figure_4_panel_H.csv", index=False)
 
 ########################################################################
 # Characterize archetypal TF activation
@@ -1327,12 +1356,14 @@ p = (
 )
 p.save(figure_dir / "tf_activation_tile_plot.pdf", verbose=False)
 
+plot_df.to_csv(source_data / "figure_4_panel_F.csv", index=False)
+
 ########################################################################
 # Characterize archetypal pathway activation (using progeny)
 ########################################################################
-collectri = dc.op.progeny(organism="human")
+progeny = dc.op.progeny(organism="human")
 progeny_acts_ulm_est, progeny_acts_ulm_est_p = dc.mt.ulm(
-    data=arch_expr["z_scaled"], net=collectri, verbose=False
+    data=arch_expr["z_scaled"], net=progeny, verbose=False
 )
 
 df_1 = progeny_acts_ulm_est.reset_index(names="archetype").melt(
@@ -1618,6 +1649,8 @@ p = (
     + pn.labs(y="Gene", x="Archetype", fill="Matrisome Terms\nt-value")
 )
 p.save(figure_dir / "matrisome_tile_plot.pdf", verbose=False)
+
+plot_df.to_csv(source_data / "figure_4_panel_G.csv", index=False)
 
 ########################################################################
 # Save processed adata object (for now both on sds and locally)
